@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,14 +9,38 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* ---------- Thèmes ---------- */
   :root{
+    --ease:cubic-bezier(.22,1,.36,1);
+    --radius:18px;
     --bg:#ffffff;
     --ink:#0a0a0a;
+    --ink-rgb:10,10,10;
     --muted:#6b6b73;
-    --line:#e6e6ea;
-    --soft:#f6f6f7;
-    --ease:cubic-bezier(.22,1,.36,1);
-    --radius:16px;
+    --line:rgba(10,10,10,.08);
+    --glass:rgba(255,255,255,.45);
+    --glass-hi:rgba(255,255,255,.7);
+    --glass-border:rgba(10,10,10,.08);
+    --glass-inner:rgba(255,255,255,.9);
+    --glass-shadow:rgba(10,10,10,.10);
+    --bar:rgba(255,255,255,.6);
+    --blob:rgba(10,10,10,.045);
+    --blur:blur(22px) saturate(170%);
+  }
+  html[data-theme="dark"]{
+    --bg:#070708;
+    --ink:#f5f5f7;
+    --ink-rgb:245,245,247;
+    --muted:#8e8e98;
+    --line:rgba(255,255,255,.08);
+    --glass:rgba(255,255,255,.04);
+    --glass-hi:rgba(255,255,255,.09);
+    --glass-border:rgba(255,255,255,.1);
+    --glass-inner:rgba(255,255,255,.14);
+    --glass-shadow:rgba(0,0,0,.55);
+    --bar:rgba(10,10,12,.55);
+    --blob:rgba(255,255,255,.05);
+    color-scheme:dark;
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
@@ -25,42 +49,48 @@
     font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.5;
     -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    transition:background-color .6s var(--ease),color .6s var(--ease);
   }
-  ::selection{background:var(--ink);color:#fff}
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(760px circle at 88% 4%,var(--blob),transparent 60%),
+      radial-gradient(640px circle at 4% 62%,var(--blob),transparent 60%);
+  }
+  ::selection{background:var(--ink);color:var(--bg)}
   a{color:inherit}
   button,input{font:inherit;color:inherit}
-  section{scroll-margin-top:72px}
+  section{scroll-margin-top:110px}
   a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 
-  /* ---------- Progress bar ---------- */
-  #progress{
-    position:fixed;top:0;left:0;height:2px;width:100%;
-    background:var(--ink);transform-origin:0 50%;transform:scaleX(0);z-index:60;
-  }
-
-  /* ---------- Ambient glow (souris) ---------- */
+  /* ---------- Glow souris ---------- */
   .glow{
     position:fixed;left:0;top:0;width:520px;height:520px;border-radius:50%;
-    background:radial-gradient(circle,rgba(10,10,10,.055),transparent 65%);
+    background:radial-gradient(circle,rgba(var(--ink-rgb),.05),transparent 65%);
     pointer-events:none;z-index:0;will-change:transform;
   }
 
-  /* ---------- Header ---------- */
-  .header{
-    position:fixed;top:0;left:0;right:0;height:72px;z-index:50;
-    border-bottom:1px solid transparent;
-    transition:background .4s,border-color .4s,backdrop-filter .4s;
+  /* ---------- Liquid glass (base commune) ---------- */
+  .header,.btn,.chip,.search input,.stat,.icon-btn,.to-top,.card,.card-icon,.card-arrow,.info-card,.empty,kbd{
+    background:var(--glass);
+    -webkit-backdrop-filter:var(--blur);
+    backdrop-filter:var(--blur);
+    border:1px solid var(--glass-border);
+    box-shadow:inset 0 1px 0 var(--glass-inner);
   }
-  .header.scrolled{
-    background:rgba(255,255,255,.85);
-    backdrop-filter:saturate(180%) blur(14px);
-    -webkit-backdrop-filter:saturate(180%) blur(14px);
-    border-bottom-color:var(--line);
+
+  /* ---------- Header flottant ---------- */
+  .header{
+    position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    width:min(1200px,calc(100% - 28px));height:64px;z-index:50;
+    border-radius:22px;background:var(--glass-hi);
+    box-shadow:inset 0 1px 0 var(--glass-inner),0 16px 40px -24px var(--glass-shadow);
   }
   .nav{
-    max-width:1200px;height:100%;margin:0 auto;padding:0 24px;
+    height:100%;padding:0 12px 0 20px;
     display:flex;align-items:center;justify-content:space-between;gap:24px;
   }
+  .nav-right{display:flex;align-items:center;gap:10px}
   .logo{
     display:flex;align-items:center;gap:10px;text-decoration:none;
     font-weight:800;font-size:1.2rem;letter-spacing:-.03em;
@@ -70,7 +100,7 @@
     position:relative;transition:transform .6s var(--ease);
   }
   .logo-mark::after{
-    content:"";position:absolute;inset:8px;border:2px solid #fff;border-radius:50%;
+    content:"";position:absolute;inset:8px;border:2px solid var(--bg);border-radius:50%;
   }
   .logo:hover .logo-mark{transform:rotate(180deg)}
   .nav-links{display:flex;gap:30px;font-size:14px;color:var(--muted)}
@@ -83,26 +113,48 @@
   }
   .nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
 
-  /* ---------- Buttons ---------- */
-  .btn{
-    display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:999px;
-    background:var(--ink);color:#fff;border:1px solid var(--ink);
-    text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;
-    transition:transform .4s var(--ease),background .3s,color .3s,border-color .3s;
+  /* ---------- Bouton thème ---------- */
+  .icon-btn{
+    width:40px;height:40px;border-radius:50%;cursor:pointer;color:var(--ink);
+    display:grid;place-items:center;position:relative;
+    transition:transform .4s var(--ease),background .3s,border-color .3s;
   }
-  .btn:hover{transform:translateY(-2px)}
-  .btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
-  .btn-ghost:hover{border-color:var(--ink)}
+  .icon-btn:hover{transform:translateY(-1px) rotate(12deg);background:var(--glass-hi)}
+  .icon-btn svg{grid-area:1/1;transition:opacity .4s,transform .6s var(--ease)}
+  .icon-btn .i-moon{opacity:1}
+  .icon-btn .i-sun{opacity:0;transform:rotate(-90deg)}
+  html[data-theme="dark"] .icon-btn .i-moon{opacity:0;transform:rotate(90deg)}
+  html[data-theme="dark"] .icon-btn .i-sun{opacity:1;transform:none}
+
+  /* ---------- Boutons ---------- */
+  .btn{
+    position:relative;overflow:hidden;
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    padding:14px 22px;border-radius:999px;color:var(--ink);
+    text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;
+    transition:transform .4s var(--ease),background .3s,border-color .3s,box-shadow .3s;
+  }
+  .btn::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);
+    transform:translateX(-120%);transition:transform 1s var(--ease);
+  }
+  .btn:hover::after{transform:translateX(120%)}
+  .btn:hover{transform:translateY(-2px);border-color:rgba(var(--ink-rgb),.3)}
+  .btn-primary{
+    background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9);
+  }
+  .btn-primary:hover{background:rgba(var(--ink-rgb),1);border-color:rgba(var(--ink-rgb),1)}
   .btn-sm{padding:9px 16px;font-size:14px}
   kbd{
     font-family:"JetBrains Mono",monospace;font-size:11px;padding:2px 6px;
-    border:1px solid var(--line);border-radius:6px;color:var(--muted);background:#fff;
+    border-radius:6px;color:var(--muted);
   }
 
   /* ---------- Hero ---------- */
   .hero{
     position:relative;isolation:isolate;
-    max-width:1200px;margin:0 auto;padding:160px 24px 96px;
+    max-width:1200px;margin:0 auto;padding:170px 24px 96px;
   }
   .hero::before{
     content:"";position:absolute;inset:0 -24px;z-index:-1;pointer-events:none;
@@ -114,36 +166,27 @@
     -webkit-mask-image:radial-gradient(ellipse at 75% 20%,#000 5%,transparent 70%);
     opacity:.6;
   }
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);
-    padding:7px 14px;border:1px solid var(--line);border-radius:999px;margin-bottom:32px;
-    background:#fff;
-  }
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--ink);position:relative}
-  .dot::after{
-    content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--ink);
-    animation:ping 2s var(--ease) infinite;
-  }
   h1{
     font-size:clamp(2.8rem,7.5vw,6rem);line-height:1;letter-spacing:-.05em;font-weight:800;
   }
   .line{display:block;overflow:hidden;padding-bottom:.08em}
   .line span{display:inline-block;transform:translateY(110%);animation:lineUp 1.1s var(--ease) forwards}
   .line + .line span{animation-delay:.12s}
-  h1 em{font-style:normal;color:#a1a1aa}
+  h1 em{font-style:normal;color:var(--muted)}
   .lead{
     margin-top:28px;max-width:560px;font-size:1.1rem;color:var(--muted);line-height:1.65;
   }
   .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
-  .stats{
-    display:flex;gap:56px;flex-wrap:wrap;margin-top:72px;padding-top:36px;border-top:1px solid var(--line);
+  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:64px}
+  .stat{
+    padding:18px 24px;border-radius:var(--radius);min-width:180px;
   }
-  .stat strong{display:block;font-size:2.4rem;font-weight:800;letter-spacing:-.04em;line-height:1.1}
+  .stat strong{display:block;font-size:2.2rem;font-weight:800;letter-spacing:-.04em;line-height:1.1}
   .stat span{font-size:13px;color:var(--muted)}
 
   /* ---------- Marquee ---------- */
   .marquee{
-    border-block:1px solid var(--line);overflow:hidden;padding:22px 0;background:#fff;
+    border-block:1px solid var(--line);overflow:hidden;padding:22px 0;
   }
   .marquee-track{display:flex;width:max-content;animation:marquee 60s linear infinite}
   .marquee:hover .marquee-track{animation-play-state:paused}
@@ -158,10 +201,11 @@
     border-radius:50%;background:var(--ink);
   }
 
-  /* ---------- Toolbar ---------- */
+  /* ---------- Barre d'outils ---------- */
   .toolbar{
-    position:sticky;top:72px;z-index:30;
-    background:rgba(255,255,255,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    position:sticky;top:92px;z-index:30;
+    background:var(--bar);
+    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
     border-bottom:1px solid var(--line);
   }
   .toolbar-inner{
@@ -174,25 +218,26 @@
   .chips::-webkit-scrollbar{display:none}
   .chip{
     flex-shrink:0;display:inline-flex;align-items:center;gap:8px;
-    padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;
+    padding:8px 14px;border-radius:999px;color:var(--ink);
     font-size:13.5px;font-weight:500;cursor:pointer;
     transition:background .3s,color .3s,border-color .3s,transform .3s var(--ease);
   }
   .chip span{font-size:12px;opacity:.5}
-  .chip:hover{border-color:var(--ink);transform:translateY(-1px)}
-  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .chip:hover{transform:translateY(-1px);border-color:rgba(var(--ink-rgb),.3)}
+  .chip.active{background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9)}
   .search{position:relative;display:flex;align-items:center;width:320px;max-width:100%;flex-shrink:0}
   .search svg{position:absolute;left:14px;color:var(--muted);pointer-events:none}
   .search input{
-    width:100%;padding:11px 48px 11px 40px;border:1px solid var(--line);border-radius:12px;
-    background:var(--soft);outline:none;font-size:15px;
+    width:100%;padding:11px 48px 11px 40px;border-radius:14px;
+    outline:none;font-size:15px;color:var(--ink);
     transition:border-color .3s,background .3s,box-shadow .3s;
   }
-  .search input:focus{border-color:var(--ink);background:#fff;box-shadow:0 0 0 4px rgba(10,10,10,.06)}
+  .search input::placeholder{color:var(--muted)}
+  .search input:focus{border-color:rgba(var(--ink-rgb),.4);background:var(--glass-hi);box-shadow:inset 0 1px 0 var(--glass-inner),0 0 0 4px rgba(var(--ink-rgb),.06)}
   .search input:focus ~ kbd{opacity:0}
   .search kbd{position:absolute;right:12px;transition:opacity .2s}
 
-  /* ---------- Results ---------- */
+  /* ---------- Résultats ---------- */
   .results{max-width:1200px;margin:0 auto;padding:56px 24px 120px}
   .results-head{margin-bottom:32px}
   .idx{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);letter-spacing:.02em}
@@ -201,36 +246,40 @@
   }
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 
-  /* ---------- Cards ---------- */
+  /* ---------- Cartes ---------- */
   .card{
     --mx:50%;--my:50%;
     position:relative;isolation:isolate;overflow:hidden;
     display:flex;flex-direction:column;gap:14px;padding:22px;
-    border:1px solid var(--line);border-radius:var(--radius);background:#fff;
-    text-decoration:none;
-    transition:transform .5s var(--ease),border-color .3s,box-shadow .5s var(--ease);
+    border-radius:var(--radius);color:var(--ink);text-decoration:none;
+    transition:transform .5s var(--ease),border-color .3s,background .3s,box-shadow .5s var(--ease);
     animation:cardIn .8s var(--ease) backwards;
     animation-delay:calc(min(var(--i,0),14) * 35ms);
   }
   .card::before{
     content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .4s;
-    background:radial-gradient(320px circle at var(--mx) var(--my),rgba(10,10,10,.06),transparent 70%);
+    background:radial-gradient(320px circle at var(--mx) var(--my),rgba(var(--ink-rgb),.08),transparent 70%);
   }
-  .card:hover{transform:translateY(-4px);border-color:#c9c9d0;box-shadow:0 24px 40px -24px rgba(0,0,0,.25)}
+  .card:hover{
+    transform:translateY(-4px);background:var(--glass-hi);
+    border-color:rgba(var(--ink-rgb),.22);
+    box-shadow:inset 0 1px 0 var(--glass-inner),0 24px 40px -24px var(--glass-shadow);
+  }
   .card:hover::before{opacity:1}
   .card-top{display:flex;justify-content:space-between;align-items:flex-start}
   .card-icon{
-    width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--soft);
+    width:44px;height:44px;border-radius:12px;
     display:grid;place-items:center;overflow:hidden;
     transition:transform .5s var(--ease);
   }
   .card:hover .card-icon{transform:scale(1.06)}
   .card-icon img{width:24px;height:24px}
   .card-arrow{
-    width:36px;height:36px;border-radius:50%;border:1px solid var(--line);
-    display:grid;place-items:center;transition:transform .5s var(--ease),background .3s,color .3s,border-color .3s;
+    width:36px;height:36px;border-radius:50%;color:var(--ink);
+    display:grid;place-items:center;
+    transition:transform .5s var(--ease),background .3s,color .3s,border-color .3s;
   }
-  .card:hover .card-arrow{background:var(--ink);color:#fff;border-color:var(--ink);transform:rotate(45deg)}
+  .card:hover .card-arrow{background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9);transform:rotate(45deg)}
   .card h3{font-size:1.08rem;font-weight:700;letter-spacing:-.02em}
   .card p{font-size:14px;color:var(--muted);line-height:1.6}
   .card-foot{
@@ -245,54 +294,81 @@
   }
   .empty{
     grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--muted);
-    border:1px dashed var(--line);border-radius:var(--radius);
+    border-radius:var(--radius);
   }
 
   /* ---------- Footer ---------- */
-  .footer{border-top:1px solid var(--line);padding:56px 24px 40px}
+  .footer{border-top:1px solid var(--line);padding:72px 24px 40px}
   .footer-inner{
-    max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;
-    gap:32px;flex-wrap:wrap;
+    max-width:1200px;margin:0 auto;
+    display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:40px;
   }
-  .footer p{color:var(--muted);font-size:14px;margin-top:12px;max-width:340px}
-  .footer .fine{font-size:13px;margin-top:0}
+  .footer-brand p{color:var(--muted);font-size:14px;margin-top:14px;max-width:340px}
+  .footer-col{display:flex;flex-direction:column;gap:12px}
+  .footer-col h4{
+    font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+    font-weight:600;margin-bottom:4px;
+  }
+  .footer-col a{
+    text-decoration:none;font-size:14.5px;color:var(--ink);width:fit-content;
+    transition:color .2s,opacity .2s;opacity:.85;
+  }
+  .footer-col a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+  .info-grid{
+    max-width:1200px;margin:56px auto 0;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;
+  }
+  .info-card{
+    padding:24px;border-radius:var(--radius);scroll-margin-top:120px;
+  }
+  .info-card h3{font-size:1rem;font-weight:700;letter-spacing:-.01em;margin-bottom:10px}
+  .info-card p{font-size:14px;color:var(--muted);line-height:1.65}
+  .info-card a{color:var(--ink);font-weight:600;font-size:14px}
+  .footer-bottom{
+    max-width:1200px;margin:48px auto 0;padding-top:24px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    font-size:13px;color:var(--muted);
+  }
 
-  /* ---------- Back to top ---------- */
+  /* ---------- Retour en haut ---------- */
   .to-top{
     position:fixed;right:24px;bottom:24px;width:46px;height:46px;border-radius:50%;
-    border:1px solid var(--line);background:#fff;cursor:pointer;z-index:40;
+    cursor:pointer;color:var(--ink);z-index:40;
     display:grid;place-items:center;opacity:0;transform:translateY(14px);pointer-events:none;
-    transition:opacity .4s,transform .5s var(--ease),background .3s,color .3s;
+    transition:opacity .4s,transform .5s var(--ease),background .3s,border-color .3s;
   }
   .to-top.show{opacity:1;transform:none;pointer-events:auto}
-  .to-top:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .to-top:hover{background:var(--glass-hi);transform:translateY(-2px)}
 
-  /* ---------- Reveal on scroll ---------- */
+  /* ---------- Apparition au scroll ---------- */
   .reveal{opacity:0;transform:translateY(32px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
   .reveal.in{opacity:1;transform:none}
 
-  /* ---------- Keyframes ---------- */
+  /* ---------- Animations ---------- */
   @keyframes lineUp{to{transform:translateY(0)}}
   @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
   @keyframes marquee{to{transform:translateX(-50%)}}
-  @keyframes ping{0%{transform:scale(1);opacity:.8}100%{transform:scale(3.2);opacity:0}}
 
   /* ---------- Responsive ---------- */
   @media (max-width:820px){
     .nav-links{display:none}
-    .hero{padding-top:130px}
-    .stats{gap:32px}
+    .hero{padding-top:150px}
+    .toolbar{top:92px}
     .toolbar-inner{flex-direction:column;align-items:stretch;gap:12px}
     .search{width:100%}
+    .footer-inner{grid-template-columns:1fr 1fr}
+    .footer-brand{grid-column:1/-1}
   }
   @media (max-width:520px){
-    .hero::before{inset:0}
-    .btn{width:100%;justify-content:center}
     .hero-actions{flex-direction:column}
+    .hero-actions .btn{width:100%}
+    .stat{min-width:0;flex:1 1 140px}
+    .footer-inner{grid-template-columns:1fr}
     .to-top{right:16px;bottom:16px}
+    .nav{padding-left:16px}
   }
 
-  /* ---------- Accessibilité : mouvement réduit ---------- */
+  /* ---------- Mouvement réduit ---------- */
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{
       animation-duration:.01ms !important;animation-iteration-count:1 !important;
@@ -305,7 +381,6 @@
 </head>
 <body>
 
-<div id="progress"></div>
 <div class="glow" id="glow"></div>
 
 <header class="header" id="header">
@@ -316,7 +391,13 @@
       <a href="#outils" data-jump="all">Catégories</a>
       <a href="#apropos">À propos</a>
     </div>
-    <a href="#outils" class="btn btn-sm">Explorer</a>
+    <div class="nav-right">
+      <button class="icon-btn" id="themeToggle" type="button" aria-label="Passer en thème sombre">
+        <svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <a href="#outils" class="btn btn-primary btn-sm">Explorer</a>
+    </div>
   </nav>
 </header>
 
@@ -324,18 +405,17 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="eyebrow reveal"><span class="dot"></span>Boîte à outils OSINT</div>
     <h1>
-      <span class="line"><span>Toute la veille</span></span>
-      <span class="line"><span><em>en un seul</em> endroit.</span></span>
+      <span class="line"><span>Tous vos outils OSINT</span></span>
+      <span class="line"><span><em>au même endroit.</em></span></span>
     </h1>
     <p class="lead reveal">
       Une sélection d'outils de renseignement en sources ouvertes, classés par catégorie.
       Recherchez, filtrez et accédez directement à l'outil dont vous avez besoin.
     </p>
     <div class="hero-actions reveal">
-      <a href="#outils" class="btn">Explorer les outils →</a>
-      <button class="btn btn-ghost" id="focusSearch" type="button">Rechercher <kbd>/</kbd></button>
+      <a href="#outils" class="btn btn-primary">Explorer les outils →</a>
+      <button class="btn" id="focusSearch" type="button">Rechercher <kbd>/</kbd></button>
     </div>
     <div class="stats reveal" id="stats">
       <div class="stat"><strong data-count="tools">0</strong><span>Outils référencés</span></div>
@@ -373,17 +453,54 @@
 
 </main>
 
-<footer class="footer" id="apropos">
+<footer class="footer">
   <div class="footer-inner">
-    <div>
+    <div class="footer-brand">
       <a href="#top" class="logo"><span class="logo-mark"></span>Untilted</a>
-      <p>Boîte à outils OSINT. Ressources basées uniquement sur des sources ouvertes.</p>
+      <p>Une boîte à outils de recherche en sources ouvertes, classée par catégorie et prête à l'emploi.</p>
     </div>
-    <p class="fine">© <span id="year"></span> Untilted. Tous droits réservés.</p>
+    <nav class="footer-col" aria-label="Navigation">
+      <h4>Navigation</h4>
+      <a href="#top">Accueil</a>
+      <a href="#outils">Outils</a>
+      <a href="#outils" data-jump="all">Catégories</a>
+    </nav>
+    <nav class="footer-col" aria-label="Informations">
+      <h4>Informations</h4>
+      <a href="#apropos">À propos</a>
+      <a href="#legal">Avertissement légal</a>
+      <a href="#confidentialite">Confidentialité</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+
+  <div class="info-grid">
+    <article class="info-card glass" id="apropos">
+      <h3>À propos</h3>
+      <p>Untilted rassemble des outils de recherche en sources ouvertes (OSINT) pour les journalistes, chercheurs, enquêteurs et curieux. Les outils sont classés par catégorie et accessibles en un clic.</p>
+    </article>
+    <article class="info-card glass" id="legal">
+      <h3>Avertissement légal</h3>
+      <p>Ce site recense des services publics à titre informatif et éducatif. Untilted ne gère pas les outils listés et n'est pas responsable de leur contenu ni de leur usage. Toute recherche sur une personne doit respecter la loi, dont le RGPD, et les conditions d'utilisation des plateformes.</p>
+    </article>
+    <article class="info-card glass" id="confidentialite">
+      <h3>Confidentialité</h3>
+      <p>Le site ne demande aucun compte et ne contient aucun formulaire. Les icônes et les polices sont chargées depuis les serveurs de Google. Les sites ouverts par les liens ont leurs propres politiques de confidentialité.</p>
+    </article>
+    <article class="info-card glass" id="contact">
+      <h3>Contact</h3>
+      <p>Pour proposer un outil, signaler un lien ou poser une question rejoignez notre serveur discord :</p>
+      <a class="xxx" href="https://discord.gg/b8UktZArKt" target="_blank" rel="noopener noreferrer">Untilted | Osint</a>
+    </article>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© <span id="year"></span> Untilted. Tous droits réservés.</p>
+    <p>Boîte à outils</p>
   </div>
 </footer>
 
-<button class="to-top" id="toTop" aria-label="Revenir en haut" type="button">
+<button class="to-top glass" id="toTop" aria-label="Revenir en haut" type="button">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 </button>
 
@@ -850,10 +967,12 @@ $('#grid').addEventListener('mousemove', e => {
   card.style.setProperty('--my', (e.clientY - r.top) + 'px');
 });
 
-// Lien "Catégories" dans la navigation : affiche tout et remonte aux filtres
-document.querySelector('[data-jump="all"]').addEventListener('click', () => {
-  currentCat = 'all';
-  render();
+// Liens "Catégories" (navigation et footer) : affiche tout et remonte aux filtres
+document.querySelectorAll('[data-jump="all"]').forEach(el => {
+  el.addEventListener('click', () => {
+    currentCat = 'all';
+    render();
+  });
 });
 
 function focusSearch(){
@@ -874,6 +993,22 @@ document.addEventListener('keydown', e => {
     renderGrid();
     s.blur();
   }
+});
+
+/* ---------- Thème clair / sombre ---------- */
+const THEME_KEY = 'untilted-theme';
+function setTheme(theme){
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
+  $('#themeToggle').setAttribute('aria-label',
+    theme === 'dark' ? 'Passer en thème clair' : 'Passer en thème sombre');
+}
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(THEME_KEY); } catch(e){}
+setTheme(savedTheme === 'dark' ? 'dark' : 'light');
+
+$('#themeToggle').addEventListener('click', () => {
+  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 });
 
 /* ---------- Animations ---------- */
@@ -909,16 +1044,10 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: 0.15 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-// Header, barre de progression et bouton retour
-const header = $('#header');
-const progress = $('#progress');
+// Bouton retour en haut
 const toTop = $('#toTop');
 window.addEventListener('scroll', () => {
-  const y = window.scrollY;
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-  header.classList.toggle('scrolled', y > 20);
-  progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
-  toTop.classList.toggle('show', y > 600);
+  toTop.classList.toggle('show', window.scrollY > 600);
 }, { passive:true });
 toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
 
