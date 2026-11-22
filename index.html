@@ -145,7 +145,7 @@
   .marquee{
     border-block:1px solid var(--line);overflow:hidden;padding:22px 0;background:#fff;
   }
-  .marquee-track{display:flex;width:max-content;animation:marquee 32s linear infinite}
+  .marquee-track{display:flex;width:max-content;animation:marquee 60s linear infinite}
   .marquee:hover .marquee-track{animation-play-state:paused}
   .group{display:flex;align-items:center}
   .group span{
@@ -210,7 +210,7 @@
     text-decoration:none;
     transition:transform .5s var(--ease),border-color .3s,box-shadow .5s var(--ease);
     animation:cardIn .8s var(--ease) backwards;
-    animation-delay:calc(var(--i,0) * 35ms);
+    animation-delay:calc(min(var(--i,0),14) * 35ms);
   }
   .card::before{
     content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .4s;
@@ -238,8 +238,10 @@
     display:flex;justify-content:space-between;gap:12px;align-items:center;
     font-size:12px;color:var(--muted);
   }
+  .card-foot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .card-foot span:last-child{
     font-family:"JetBrains Mono",monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    flex-shrink:0;max-width:45%;
   }
   .empty{
     grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--muted);
@@ -391,55 +393,380 @@
    Pour en ajouter une : { id:'identifiant', name:'Nom affiché' }
    ========================================================== */
 const CATEGORIES = [
-  { id: 'contact',    name: 'Contact Jetable' },
-  { id: 'domaines',   name: 'Domaines & IP' },
-  { id: 'archives',   name: 'Archives web' },
-  { id: 'fuites',     name: 'Fuites de données' },
-  { id: 'images',     name: 'Images & Métadonnées' },
-  { id: 'ressources', name: 'Ressources' },
+  { id:'contact',     name:'Contact Jetable' },
+  { id:'moteurs',     name:'Moteurs de recherche' },
+  { id:'personnes',   name:'Personnes & identité' },
+  { id:'username',    name:'Pseudos & comptes' },
+  { id:'email',       name:'E-mail' },
+  { id:'telephone',   name:'Téléphone' },
+  { id:'reseaux',     name:'Réseaux sociaux' },
+  { id:'domaines',    name:'Domaines & IP' },
+  { id:'cyber',       name:'Menaces & Dark web' },
+  { id:'fuites',      name:'Fuites de données' },
+  { id:'archives',    name:'Archives web' },
+  { id:'images',      name:'Images & Métadonnées' },
+  { id:'video',       name:'Vidéo & Deepfakes' },
+  { id:'documents',   name:'Documents & Savoir' },
+  { id:'geo',         name:'Géolocalisation' },
+  { id:'transport',   name:'Transport & trafic' },
+  { id:'entreprises', name:'Entreprises & registres' },
+  { id:'crypto',      name:'Crypto & blockchain' },
+  { id:'actus',       name:'Actualités & médias' },
+  { id:'ressources',  name:'Ressources & formation' },
 ];
 
 /* ==========================================================
    2) OUTILS
-   Pour en ajouter un : { cat:'id_categorie', name:'Nom', url:'https://...', desc:'Description' }
+   Format : ["catégorie", "Nom", "URL", "Description"]
+   Pour ajouter un outil, ajoute simplement une ligne dans RAW.
    ========================================================== */
-const TOOLS = [
-  // ---- Contact Jetable ----
-  { cat:'contact', name:'OnlineSIM', url:'https://onlinesim.net/', desc:'Numéros virtuels temporaires pour recevoir des SMS de vérification.' },
-  { cat:'contact', name:'DoNotPay – Numéro temporaire', url:'https://donotpay.com/learn/temporary-phone-number/', desc:'Générer un numéro de téléphone temporaire.' },
-  { cat:'contact', name:'IntelTechniques VoIP Suite', url:'https://inteltechniques.com/voip.suite.html', desc:'Suite d\'outils VoIP de Michael Bazzell pour les recherches OSINT.' },
-  { cat:'contact', name:'IntelTechniques Twilio CLI', url:'https://inteltechniques.com/voip.twilio.cli.html', desc:'Utilisation de Twilio en ligne de commande pour l\'analyse VoIP.' },
-  { cat:'contact', name:'10 Minute Mail', url:'https://10minutemail.com/', desc:'Adresse e-mail jetable valable 10 minutes.' },
-  { cat:'contact', name:'AnonAddy', url:'https://anonaddy.com/', desc:'Alias e-mail anonymes redirigés vers votre boîte réelle.' },
-  { cat:'contact', name:'SimpleLogin', url:'https://simplelogin.io/', desc:'Alias e-mail pour protéger votre adresse principale.' },
-  { cat:'contact', name:'Maildrop', url:'https://maildrop.cc/', desc:'Boîte e-mail jetable, sans inscription.' },
-  { cat:'contact', name:'Globfone', url:'https://globfone.com/send-text/', desc:'Envoi de SMS en ligne.' },
-  { cat:'contact', name:'SendAText', url:'https://www.sendatext.co/', desc:'Envoi de SMS en ligne.' },
-  { cat:'contact', name:'FaxZero', url:'https://faxzero.com/', desc:'Envoi de fax gratuit en ligne.' },
-  { cat:'contact', name:'HS3X', url:'https://hs3x.com/', desc:'Numéros SMS temporaires.' },
-  { cat:'contact', name:'Free SMS Verification', url:'http://freesmsverification.com/', desc:'Numéros temporaires pour recevoir des SMS.' },
-  { cat:'contact', name:'SMSToMe', url:'https://smstome.com/', desc:'Numéros temporaires pour recevoir des SMS.' },
-  { cat:'contact', name:'AWS SNS', url:'https://aws.amazon.com/sns/', desc:'Service d\'envoi de SMS et de notifications d\'Amazon Web Services.' },
-  { cat:'contact', name:'Twilio', url:'https://www.twilio.com/', desc:'Plateforme API de communications (SMS, appels, vérification).' },
-  { cat:'contact', name:'Threader', url:'https://threader.app/thread/1199785692274077696', desc:'Lecteur de threads Twitter / X.' },
+const RAW = [
+  // ---- Contact jetable ----
+  ["contact","OnlineSIM","https://onlinesim.net/","Numéros virtuels temporaires pour recevoir des SMS de vérification."],
+  ["contact","DoNotPay – Numéro temporaire","https://donotpay.com/learn/temporary-phone-number/","Générer un numéro de téléphone temporaire."],
+  ["contact","IntelTechniques VoIP Suite","https://inteltechniques.com/voip.suite.html","Suite d'outils VoIP pour les recherches OSINT."],
+  ["contact","IntelTechniques Twilio CLI","https://inteltechniques.com/voip.twilio.cli.html","Utiliser Twilio en ligne de commande pour l'analyse VoIP."],
+  ["contact","10 Minute Mail","https://10minutemail.com/","Adresse e-mail jetable valable 10 minutes."],
+  ["contact","AnonAddy","https://anonaddy.com/","Alias e-mail anonymes redirigés vers votre boîte réelle."],
+  ["contact","SimpleLogin","https://simplelogin.io/","Alias e-mail pour protéger votre adresse principale."],
+  ["contact","Maildrop","https://maildrop.cc/","Boîte e-mail jetable, sans inscription."],
+  ["contact","Globfone","https://globfone.com/send-text/","Envoi de SMS en ligne."],
+  ["contact","SendAText","https://www.sendatext.co/","Envoi de SMS en ligne."],
+  ["contact","FaxZero","https://faxzero.com/","Envoi de fax gratuit en ligne."],
+  ["contact","HS3X","https://hs3x.com/","Numéros SMS temporaires."],
+  ["contact","Free SMS Verification","http://freesmsverification.com/","Numéros temporaires pour recevoir des SMS."],
+  ["contact","SMSToMe","https://smstome.com/","Numéros temporaires pour recevoir des SMS."],
+  ["contact","AWS SNS","https://aws.amazon.com/sns/","Service d'envoi de SMS et de notifications d'Amazon Web Services."],
+  ["contact","Twilio","https://www.twilio.com/","Plateforme API de communications (SMS, appels, vérification)."],
+  ["contact","Threader","https://threader.app/thread/1199785692274077696","Lecteur de threads Twitter / X."],
+  ["contact","Disify","https://disify.com/","Vérifier si une adresse e-mail est jetable."],
+  ["contact","Temp-Mail","https://temp-mail.org/","Adresse e-mail temporaire instantanée."],
+  ["contact","Guerrilla Mail","https://www.guerrillamail.com/","Boîte e-mail temporaire avec envoi possible."],
+  ["contact","Mailinator","https://www.mailinator.com/","Boîte publique jetable pour tests et inscriptions."],
+  ["contact","YOPmail","https://yopmail.com/","Adresse e-mail jetable sans inscription."],
+  ["contact","TextVerified","https://www.textverified.com/","Numéros virtuels pour la vérification par SMS."],
 
-  // ---- Exemples (à supprimer ou compléter) ----
-  { cat:'domaines', name:'crt.sh', url:'https://crt.sh', desc:'Recherche de certificats SSL/TLS pour découvrir des sous-domaines.' },
-  { cat:'domaines', name:'Shodan', url:'https://www.shodan.io', desc:'Moteur de recherche des appareils connectés à Internet.' },
-  { cat:'domaines', name:'urlscan.io', url:'https://urlscan.io', desc:'Analyse et capture de sites web.' },
-  { cat:'domaines', name:'VirusTotal', url:'https://www.virustotal.com', desc:'Analyse de fichiers, URL, domaines et IP.' },
+  // ---- Moteurs de recherche ----
+  ["moteurs","Google","https://www.google.com/","Moteur de recherche généraliste."],
+  ["moteurs","Google – Recherche avancée","https://www.google.com/advanced_search","Filtrer par date, langue, domaine, type de fichier."],
+  ["moteurs","Google Hacking Database","https://www.exploit-db.com/google-hacking-database","Base de requêtes avancées (dorks) pour Google."],
+  ["moteurs","Bing","https://www.bing.com/","Moteur de recherche de Microsoft."],
+  ["moteurs","DuckDuckGo","https://duckduckgo.com/","Recherche sans pistage des utilisateurs."],
+  ["moteurs","Brave Search","https://search.brave.com/","Moteur indépendant basé sur son propre index."],
+  ["moteurs","Qwant","https://www.qwant.com/","Moteur de recherche européen respectueux de la vie privée."],
+  ["moteurs","Startpage","https://www.startpage.com/","Résultats Google de manière anonyme."],
+  ["moteurs","Mojeek","https://www.mojeek.com/","Moteur indépendant avec son propre index."],
+  ["moteurs","Marginalia","https://search.marginalia.nu/","Moteur qui met en avant les sites indépendants."],
+  ["moteurs","Yandex","https://yandex.com/","Moteur russe, très utile pour les pays de l'Est."],
+  ["moteurs","Baidu","https://www.baidu.com/","Moteur de recherche chinois."],
+  ["moteurs","SearXNG","https://github.com/searxng/searxng","Métamoteur auto-hébergeable qui agrège plusieurs moteurs."],
+  ["moteurs","Wolfram Alpha","https://www.wolframalpha.com/","Moteur de calcul et de données structurées."],
 
-  { cat:'archives', name:'Wayback Machine', url:'https://web.archive.org', desc:'Consulter les anciennes versions de sites web.' },
-  { cat:'archives', name:'Archive.today', url:'https://archive.ph', desc:'Archiver et consulter des pages web figées.' },
+  // ---- Personnes & identité ----
+  ["personnes","Epieos","https://epieos.com/","Recherche d'informations liées à une adresse e-mail ou un numéro."],
+  ["personnes","Pipl","https://pipl.com/","Moteur de recherche de personnes à partir d'identités."],
+  ["personnes","IDCrawl","https://www.idcrawl.com/","Recherche d'empreinte numérique à partir d'un nom."],
+  ["personnes","Whitepages","https://www.whitepages.com/","Annuaire inversé et recherche de personnes (États-Unis)."],
+  ["personnes","Spokeo","https://www.spokeo.com/","Agrégateur de données publiques sur les personnes."],
+  ["personnes","TruePeopleSearch","https://www.truepeoplesearch.com/","Recherche de personnes à partir de données publiques (US)."],
+  ["personnes","OSINT Industries","https://osint.industries/","Recherche d'identités à partir d'e-mails et de numéros."],
 
-  { cat:'fuites', name:'Have I Been Pwned', url:'https://haveibeenpwned.com', desc:'Vérifier si une adresse e-mail apparaît dans une fuite de données.' },
+  // ---- Pseudos & comptes ----
+  ["username","Sherlock","https://github.com/sherlock-project/sherlock","Recherche d'un pseudo sur des centaines de réseaux."],
+  ["username","WhatsMyName","https://whatsmyname.app/","Vérifier la présence d'un pseudo sur de nombreux sites."],
+  ["username","Namechk","https://namechk.com/","Disponibilité d'un pseudo sur les réseaux sociaux."],
+  ["username","KnowEm","https://knowem.com/","Recherche de pseudo sur plus de 500 plateformes."],
+  ["username","Maigret","https://github.com/soxoj/maigret","Recherche de comptes par pseudo, avec rapport détaillé."],
+  ["username","Social Analyzer","https://github.com/qeeqbox/social-analyzer","Analyse de profils et de pseudos sur de nombreux sites."],
+  ["username","Blackbird","https://github.com/p1ngul1n0/blackbird","Recherche de comptes à partir d'un pseudo ou d'un e-mail."],
 
-  { cat:'images', name:'TinEye', url:'https://tineye.com', desc:'Recherche d\'images inversée.' },
-  { cat:'images', name:'Google Lens', url:'https://lens.google.com', desc:'Recherche visuelle par image.' },
-  { cat:'images', name:'FotoForensics', url:'https://fotoforensics.com', desc:'Analyse ELA et métadonnées d\'images.' },
+  // ---- E-mail ----
+  ["email","Hunter.io","https://hunter.io/","Trouver et vérifier les e-mails professionnels d'un domaine."],
+  ["email","EmailRep","https://emailrep.io/","Réputation et indices de risque d'une adresse e-mail."],
+  ["email","Skymem","https://www.skymem.info/","Recherche d'e-mails associés à un domaine."],
+  ["email","Phonebook.cz","https://phonebook.cz/","Recherche d'e-mails, domaines et URL indexés."],
+  ["email","Snov.io","https://snov.io/","Recherche et vérification d'e-mails professionnels."],
+  ["email","RocketReach","https://rocketreach.co/","Coordonnées professionnelles à partir d'un nom ou d'une entreprise."],
+  ["email","Lusha","https://www.lusha.com/","Coordonnées professionnelles et enrichissement de contacts."],
+  ["email","Apollo.io","https://www.apollo.io/","Base de contacts B2B et recherche de prospects."],
+  ["email","Holehe","https://github.com/megadose/holehe","Vérifier si un e-mail est lié à des services en ligne."],
+  ["email","GHunt","https://github.com/mxrch/GHunt","Informations sur un compte Google à partir d'un e-mail."],
+  ["email","Email Hippo","https://tools.emailhippo.com/","Vérification de la validité d'une adresse e-mail."],
+  ["email","Verifalia","https://verifalia.com/","Vérification en masse de listes d'adresses e-mail."],
 
-  { cat:'ressources', name:'OSINT Framework', url:'https://osintframework.com', desc:'Arbre interactif de ressources OSINT.' },
+  // ---- Téléphone ----
+  ["telephone","PhoneInfoga","https://github.com/sundowndev/PhoneInfoga","Collecte d'informations sur un numéro de téléphone."],
+  ["telephone","Truecaller","https://www.truecaller.com/","Identification des appels et recherche de numéros."],
+  ["telephone","NumVerify","https://numverify.com/","Validation et informations de transporteur d'un numéro."],
+  ["telephone","NumLookup","https://numlookup.com/","Recherche de numéros et type de ligne."],
+  ["telephone","Sync.me","https://sync.me/","Identification des numéros inconnus."],
+  ["telephone","Hiya","https://www.hiya.com/","Identification des appelants et protection anti-spam."],
+  ["telephone","Infobel","https://www.infobel.com/","Annuaires téléphoniques européens."],
+  ["telephone","118712","https://www.118712.fr/","Annuaire inversé pour les numéros français."],
+  ["telephone","PagesJaunes","https://www.pagesjaunes.fr/","Annuaire professionnel et particulier français."],
+  ["telephone","libphonenumber","https://libphonenumber.appspot.com/","Analyse et formatage de numéros de téléphone."],
+
+  // ---- Réseaux sociaux ----
+  ["reseaux","Social Searcher","https://www.social-searcher.com/","Recherche de publications sur les réseaux sociaux."],
+  ["reseaux","X – Recherche avancée","https://x.com/search-advanced","Filtrer les publications sur X par date, lieu et compte."],
+  ["reseaux","TweetDeck","https://tweetdeck.twitter.com/","Suivi de mots-clés et de comptes sur X en temps réel."],
+  ["reseaux","LinkedIn – Recherche de personnes","https://www.linkedin.com/search/results/people/","Recherche de profils professionnels publics."],
+  ["reseaux","Reddit – Recherche","https://www.reddit.com/search/","Recherche de publications et de commentaires Reddit."],
+  ["reseaux","TGStat","https://tgstat.com/","Statistiques et recherche de canaux Telegram."],
+  ["reseaux","Telemetr","https://telemetr.io/","Analyse de canaux et de groupes Telegram."],
+  ["reseaux","Lyzem","https://lyzem.com/","Moteur de recherche de canaux Telegram."],
+  ["reseaux","Who Posted What","https://whopostedwhat.com/","Recherche de tweets par auteur ou mot-clé."],
+  ["reseaux","Social Blade","https://socialblade.com/","Statistiques d'audience YouTube, Twitch et autres."],
+  ["reseaux","Followerwonk","https://followerwonk.com/","Analyse et comparaison d'audiences Twitter."],
+  ["reseaux","Bluesky","https://bsky.app/","Réseau social décentralisé avec recherche publique."],
+  ["reseaux","Instances.social","https://instances.social/","Répertoire des serveurs Mastodon du Fediverse."],
+  ["reseaux","snscrape","https://github.com/JustAnotherArchivist/snscrape","Collecte de publications de plusieurs réseaux sociaux."],
+  ["reseaux","Twint","https://github.com/twintproject/twint","Scraper de tweets (projet archivé, usage historique)."],
+
+  // ---- Domaines & IP ----
+  ["domaines","crt.sh","https://crt.sh/","Certificats SSL/TLS pour découvrir des sous-domaines."],
+  ["domaines","Shodan","https://www.shodan.io/","Moteur de recherche des appareils connectés à Internet."],
+  ["domaines","Censys","https://search.censys.io/","Recherche d'hôtes, certificats et services exposés."],
+  ["domaines","urlscan.io","https://urlscan.io/","Analyse et capture de sites web."],
+  ["domaines","VirusTotal","https://www.virustotal.com/","Analyse de fichiers, URL, domaines et IP."],
+  ["domaines","SecurityTrails","https://securitytrails.com/","Historique DNS, WHOIS et sous-domaines."],
+  ["domaines","DomainTools Whois","https://whois.domaintools.com/","Recherche WHOIS et historique de domaines."],
+  ["domaines","ViewDNS","https://viewdns.info/","Boîte à outils DNS, WHOIS et IP."],
+  ["domaines","who.is","https://who.is/","Recherche WHOIS et DNS d'un domaine."],
+  ["domaines","DNSdumpster","https://dnsdumpster.com/","Cartographie DNS et sous-domaines d'un domaine."],
+  ["domaines","BGP.he.net","https://bgp.he.net/","Informations sur les AS, préfixes IP et routage BGP."],
+  ["domaines","IPinfo","https://ipinfo.io/","Géolocalisation et informations sur une adresse IP."],
+  ["domaines","AbuseIPDB","https://www.abuseipdb.com/","Signalements d'abus pour une adresse IP."],
+  ["domaines","Robtex","https://www.robtex.com/","Relations entre domaines, IP et réseaux."],
+  ["domaines","ZoomEye","https://www.zoomeye.org/","Moteur de recherche d'appareils et services exposés."],
+  ["domaines","FOFA","https://en.fofa.info/","Recherche d'actifs Internet par requêtes avancées."],
+  ["domaines","Quake 360","https://quake.360.net/","Moteur de recherche d'actifs et de services Internet."],
+  ["domaines","GreyNoise","https://viz.greynoise.io/","Contexte sur les IP qui scannent Internet."],
+  ["domaines","Pentest-Tools","https://pentest-tools.com/","Suite d'outils de reconnaissance et de test."],
+  ["domaines","Security Headers","https://securityheaders.com/","Analyse des en-têtes de sécurité d'un site."],
+  ["domaines","SSL Labs","https://www.ssllabs.com/ssltest/","Test de configuration SSL/TLS d'un serveur."],
+  ["domaines","MXToolbox","https://mxtoolbox.com/","Diagnostic DNS, e-mail et blacklists."],
+  ["domaines","WhatsMyDNS","https://www.whatsmydns.net/","Propagation DNS dans le monde entier."],
+  ["domaines","Netcraft","https://sitereport.netcraft.com/","Rapport technique et réputation d'un site."],
+  ["domaines","BuiltWith","https://builtwith.com/","Technologies utilisées par un site web."],
+  ["domaines","Wappalyzer","https://www.wappalyzer.com/","Identification des technologies d'un site."],
+  ["domaines","Hunter.how","https://hunter.how/","Moteur de recherche d'actifs Internet."],
+  ["domaines","HackerTarget","https://hackertarget.com/","Outils de reconnaissance réseau en ligne."],
+  ["domaines","DNSChecker","https://dnschecker.org/","Vérification des enregistrements DNS."],
+  ["domaines","RIPEstat","https://stat.ripe.net/","Statistiques et données réseau pour une IP ou un AS."],
+  ["domaines","ARIN WHOIS","https://whois.arin.net/","Recherche d'attributions d'adresses IP en Amérique."],
+  ["domaines","Cloudflare Radar","https://radar.cloudflare.com/","Tendances et données sur le trafic Internet mondial."],
+  ["domaines","OWASP Amass","https://github.com/owasp-amass/amass","Cartographie de surface d'attaque et sous-domaines."],
+  ["domaines","Subfinder","https://github.com/projectdiscovery/subfinder","Découverte passive de sous-domaines."],
+  ["domaines","theHarvester","https://github.com/laramies/theHarvester","Collecte d'e-mails, sous-domaines et hôtes."],
+  ["domaines","Recon-ng","https://github.com/lanmaster53/recon-ng","Framework de reconnaissance web modulaire."],
+  ["domaines","SpiderFoot","https://github.com/smicallef/spiderfoot","Automatisation de la collecte OSINT sur une cible."],
+  ["domaines","Nmap","https://nmap.org/","Scanner de ports et de services réseau."],
+
+  // ---- Menaces & Dark web ----
+  ["cyber","Ahmia","https://ahmia.fi/","Moteur de recherche des sites .onion indexés."],
+  ["cyber","Tor Project","https://www.torproject.org/","Navigateur Tor pour accéder au réseau Tor."],
+  ["cyber","Ransomware.live","https://www.ransomware.live/","Suivi des groupes de ransomware et de leurs victimes."],
+  ["cyber","ID Ransomware","https://id-ransomware.malwarehunterteam.com/","Identifier la famille d'un ransomware à partir d'un fichier."],
+  ["cyber","Malpedia","https://malpedia.caad.fkie.fraunhofer.de/","Base de connaissances sur les familles de malware."],
+  ["cyber","MITRE ATT&CK","https://attack.mitre.org/","Référentiel des tactiques et techniques d'attaque."],
+  ["cyber","MalwareBazaar","https://bazaar.abuse.ch/","Partage d'échantillons de malware."],
+  ["cyber","URLhaus","https://urlhaus.abuse.ch/","Base d'URL utilisées pour distribuer des malwares."],
+  ["cyber","ThreatFox","https://threatfox.abuse.ch/","Partage d'indicateurs de compromission (IOC)."],
+  ["cyber","Feodo Tracker","https://feodotracker.abuse.ch/","Suivi des serveurs de botnets."],
+  ["cyber","PhishTank","https://phishtank.org/","Base communautaire de sites de phishing."],
+  ["cyber","URLVoid","https://www.urlvoid.com/","Analyse d'une URL avec plusieurs moteurs de réputation."],
+  ["cyber","Google Safe Browsing","https://transparencyreport.google.com/safe-browsing/search","Vérifier si un site est signalé comme dangereux."],
+  ["cyber","CERT-FR","https://www.cert.ssi.gouv.fr/","Alertes et avis de sécurité de l'ANSSI."],
+  ["cyber","Exploit-DB","https://www.exploit-db.com/","Base publique d'exploits et de vulnérabilités."],
+  ["cyber","CVE Details","https://www.cvedetails.com/","Recherche et statistiques sur les CVE."],
+  ["cyber","NVD (NIST)","https://nvd.nist.gov/","Base nationale américaine des vulnérabilités."],
+  ["cyber","AlienVault OTX","https://otx.alienvault.com/","Plateforme communautaire de renseignement sur les menaces."],
+  ["cyber","Pulsedive","https://pulsedive.com/","Analyse de menaces pour IP, domaines et URL."],
+  ["cyber","ThreatMiner","https://www.threatminer.org/","Recherche de renseignements sur les menaces."],
+  ["cyber","Hybrid Analysis","https://www.hybrid-analysis.com/","Analyse dynamique de fichiers suspects."],
+  ["cyber","ANY.RUN","https://any.run/","Sandbox interactive pour analyser des malwares."],
+  ["cyber","Joe Sandbox","https://www.joesandbox.com/","Analyse automatisée de fichiers et d'URL."],
+  ["cyber","Triage","https://tria.ge/","Sandbox d'analyse de malwares."],
+
+  // ---- Fuites de données ----
+  ["fuites","Have I Been Pwned","https://haveibeenpwned.com/","Vérifier si une adresse e-mail apparaît dans une fuite."],
+  ["fuites","DeHashed","https://www.dehashed.com/","Recherche dans des bases de données fuitées."],
+  ["fuites","Intelligence X","https://intelx.io/","Recherche dans des fuites, dark web et documents."],
+  ["fuites","Breach Directory","https://breachdirectory.org/","Recherche d'identifiants compromis."],
+  ["fuites","LeakCheck","https://leakcheck.io/","Vérification d'e-mails et de noms d'utilisateur dans des fuites."],
+  ["fuites","Hudson Rock","https://www.hudsonrock.com/","Renseignement sur les infostealers et identifiants volés."],
+  ["fuites","Psbdmp","https://psbdmp.ws/","Recherche dans les pastes publiés sur Pastebin."],
+  ["fuites","Ghost Project","https://ghostproject.fr/","Vérifier si des données personnelles ont fuité (France)."],
+  ["fuites","Firefox Monitor","https://monitor.firefox.com/","Surveillance des fuites de données de Mozilla."],
+
+  // ---- Archives web ----
+  ["archives","Wayback Machine","https://web.archive.org/","Anciennes versions de sites web."],
+  ["archives","Archive.today","https://archive.ph/","Archiver et consulter des pages figées."],
+  ["archives","Common Crawl","https://commoncrawl.org/","Grande archive ouverte du web."],
+  ["archives","Memento TimeTravel","https://timetravel.mementoweb.org/","Recherche dans plusieurs archives web à la fois."],
+  ["archives","Trove (Australie)","https://trove.nla.gov.au/","Archives nationales australiennes en ligne."],
+  ["archives","Library of Congress Web Archives","https://www.loc.gov/web-archives/","Archives web de la bibliothèque du Congrès."],
+  ["archives","Perma.cc","https://perma.cc/","Archiver des liens pour les citer durablement."],
+  ["archives","ArchiveBox","https://archivebox.io/","Archiver soi-même ses pages web."],
+  ["archives","Webrecorder","https://webrecorder.net/","Capturer des pages web interactives."],
+  ["archives","Internet Archive Scholar","https://scholar.archive.org/","Articles scientifiques archivés."],
+  ["archives","waybackurls","https://github.com/tomnomnom/waybackurls","Extraire les URL archivées d'un domaine."],
+  ["archives","Waybackpack","https://github.com/jsvine/waybackpack","Télécharger l'historique d'un site depuis la Wayback Machine."],
+  ["archives","Gallica (BnF)","https://gallica.bnf.fr/","Bibliothèque numérique de la BnF (presse, livres, cartes)."],
+  ["archives","RetroNews","https://www.retronews.fr/","Archives de la presse française et internationale."],
+  ["archives","INA","https://www.ina.fr/","Archives audiovisuelles de la radio et de la télévision françaises."],
+
+  // ---- Images & Métadonnées ----
+  ["images","TinEye","https://tineye.com/","Recherche d'images inversée."],
+  ["images","Google Lens","https://lens.google.com/","Recherche visuelle par image."],
+  ["images","Yandex Images","https://yandex.com/images/","Recherche d'images inversée très efficace."],
+  ["images","Bing Visual Search","https://www.bing.com/visualsearch","Recherche visuelle par image de Microsoft."],
+  ["images","FotoForensics","https://fotoforensics.com/","Analyse ELA et métadonnées d'images."],
+  ["images","Jeffrey's Exif Viewer","https://exif.regex.info/exif.cgi","Afficher les métadonnées EXIF d'une image."],
+  ["images","Metadata2Go","https://www.metadata2go.com/","Lire les métadonnées de fichiers images, audio et documents."],
+  ["images","ExifTool","https://exiftool.org/","Lecteur et éditeur de métadonnées (en ligne de commande)."],
+  ["images","Forensically","https://29a.ch/photo-forensics/","Détection de falsifications d'images dans le navigateur."],
+  ["images","Image Raider","https://www.imageraider.com/","Recherche inversée d'images et de leurs sources."],
+  ["images","Stegonline","https://stegonline.georgeom.net/","Analyse de stéganographie dans les images."],
+  ["images","Aperi'Solve","https://aperisolve.fr/","Analyse automatisée de fichiers images pour détecter des données cachées."],
+
+  // ---- Vidéo & Deepfakes ----
+  ["video","YouTube DataViewer","https://citizenevidence.amnestyusa.org/","Métadonnées et miniatures de vidéos YouTube (Amnesty)."],
+  ["video","InVID-WeVerify","https://www.invid-project.eu/","Plugin de vérification de vidéos et d'images."],
+  ["video","Hive Moderation","https://hivemoderation.com/ai-generated-content-detection","Détection de contenus générés par IA."],
+  ["video","Reality Defender","https://www.realitydefender.com/","Détection de deepfakes image, audio et vidéo."],
+  ["video","MediaInfo","https://mediaarea.net/en/MediaInfo","Informations techniques détaillées sur un fichier média."],
+
+  // ---- Documents & Savoir ----
+  ["documents","Metagoofil","https://github.com/laramies/metagoofil","Extraction de métadonnées de documents publics d'un domaine."],
+  ["documents","FOCA","https://github.com/ElevenPaths/FOCA","Analyse de métadonnées de documents Office et PDF."],
+  ["documents","DocumentCloud","https://www.documentcloud.org/","Plateforme d'analyse et de partage de documents (journalisme)."],
+  ["documents","Google Scholar","https://scholar.google.com/","Moteur de recherche d'articles scientifiques."],
+  ["documents","Semantic Scholar","https://www.semanticscholar.org/","Recherche académique assistée par IA."],
+  ["documents","Google Books","https://books.google.com/","Recherche plein texte dans des livres numérisés."],
+  ["documents","HAL","https://hal.science/","Archive ouverte française de publications scientifiques."],
+  ["documents","Persée","https://www.persee.fr/","Revues scientifiques françaises en sciences humaines."],
+  ["documents","BASE","https://www.base-search.net/","Moteur de recherche d'archives ouvertes académiques."],
+  ["documents","Wikidata","https://www.wikidata.org/","Base de données structurée et ouverte."],
+
+  // ---- Géolocalisation ----
+  ["geo","Google Earth","https://earth.google.com/","Globe 3D et imagerie historique."],
+  ["geo","Google Maps","https://maps.google.com/","Cartes, itinéraires et photos de lieux."],
+  ["geo","Google Street View","https://www.google.com/streetview/","Visualisation panoramique des rues."],
+  ["geo","Sentinel Hub EO Browser","https://apps.sentinel-hub.com/eo-browser/","Imagerie satellite Sentinel gratuite."],
+  ["geo","Copernicus Browser","https://browser.dataspace.copernicus.eu/","Imagerie satellite Copernicus de l'Union européenne."],
+  ["geo","Zoom Earth","https://zoom.earth/","Images satellite et météo en temps réel."],
+  ["geo","Wikimapia","https://wikimapia.org/","Carte collaborative annotée de lieux."],
+  ["geo","Bing Maps","https://www.bing.com/maps","Cartes et vues aériennes de Microsoft."],
+  ["geo","Yandex Maps","https://yandex.com/maps/","Cartes et panoramas, très détaillés en Europe de l'Est."],
+  ["geo","Mapillary","https://www.mapillary.com/","Photos de rues collaboratives et géolocalisées."],
+  ["geo","Overpass Turbo","https://overpass-turbo.eu/","Requêtes avancées sur les données OpenStreetMap."],
+  ["geo","SunCalc","https://www.suncalc.org/","Position du soleil pour vérifier l'heure d'une photo."],
+  ["geo","ShadowCalculator","https://shadowcalculator.eu/","Calcul des ombres pour dater ou localiser une image."],
+  ["geo","PeakFinder","https://www.peakfinder.com/","Identifier des sommets et des montagnes à partir d'un point."],
+  ["geo","Géoportail","https://www.geoportail.gouv.fr/","Cartes et photos aériennes officielles (France)."],
+  ["geo","Cadastre","https://cadastre.data.gouv.fr/","Plans cadastraux officiels (France)."],
+  ["geo","Géoportail de l'urbanisme","https://www.geoportail-urbanisme.gouv.fr/","Règles d'urbanisme par commune (France)."],
+  ["geo","OpenStreetMap","https://www.openstreetmap.org/","Carte mondiale libre et collaborative."],
+  ["geo","What3words","https://what3words.com/","Localiser un lieu avec un code de trois mots."],
+  ["geo","Plus Codes","https://plus.codes/","Codes de localisation ouverts et courts."],
+  ["geo","NASA FIRMS","https://firms.modaps.eosdis.nasa.gov/","Détection d'incendies et de points chauds par satellite."],
+  ["geo","NASA Worldview","https://worldview.earthdata.nasa.gov/","Imagerie satellite quotidienne de la Terre."],
+  ["geo","GPS Visualizer","https://www.gpsvisualizer.com/","Tracer et convertir des fichiers GPS."],
+  ["geo","HERE WeGo","https://wego.here.com/","Cartes et itinéraires alternatifs."],
+
+  // ---- Transport & trafic ----
+  ["transport","Flightradar24","https://www.flightradar24.com/","Suivi des vols en temps réel."],
+  ["transport","FlightAware","https://flightaware.com/","Suivi des vols et historique des trajets aériens."],
+  ["transport","ADS-B Exchange","https://globe.adsbexchange.com/","Suivi des avions sans filtrage."],
+  ["transport","Planefinder","https://planefinder.net/","Suivi d'avions en temps réel."],
+  ["transport","OpenSky Network","https://opensky-network.org/","Données ouvertes sur le trafic aérien."],
+  ["transport","MarineTraffic","https://www.marinetraffic.com/","Suivi des navires en temps réel."],
+  ["transport","VesselFinder","https://www.vesselfinder.com/","Suivi des navires et de leurs escales."],
+  ["transport","OpenRailwayMap","https://www.openrailwaymap.org/","Carte ferroviaire mondiale."],
+  ["transport","FAA Registry","https://registry.faa.gov/","Registre des immatriculations d'aéronefs américains."],
+  ["transport","Aviation Safety Network","https://aviation-safety.net/","Base d'accidents et d'incidents aériens."],
+  ["transport","Planespotters","https://www.planespotters.net/","Photos et historique d'avions par immatriculation."],
+  ["transport","Equasis","https://www.equasis.org/","Historique et informations officielles sur les navires."],
+  ["transport","Shipspotting","https://www.shipspotting.com/","Photos et historique de navires."],
+  ["transport","Windy","https://www.windy.com/","Météo, vent et trafic en temps réel."],
+  ["transport","Skyline Webcams","https://www.skylinewebcams.com/","Webcams en direct dans le monde entier."],
+
+  // ---- Entreprises & registres ----
+  ["entreprises","Pappers","https://www.pappers.fr/","Informations sur les entreprises françaises."],
+  ["entreprises","Infogreffe","https://www.infogreffe.fr/","Greffe des entreprises et documents officiels (France)."],
+  ["entreprises","Societe.com","https://www.societe.com/","Dirigeants, bilans et données d'entreprises françaises."],
+  ["entreprises","INPI Data","https://data.inpi.fr/","Marques, brevets et dessins déposés en France."],
+  ["entreprises","Annuaire des entreprises","https://annuaire-entreprises.data.gouv.fr/","Annuaire officiel des entreprises françaises."],
+  ["entreprises","BODACC","https://www.bodacc.fr/","Annonces légales et procédures des entreprises."],
+  ["entreprises","OpenCorporates","https://opencorporates.com/","Plus grande base mondiale d'entreprises."],
+  ["entreprises","OpenSanctions","https://www.opensanctions.org/","Listes de sanctions et personnes politiquement exposées."],
+  ["entreprises","Companies House (UK)","https://find-and-update.company-information.service.gov.uk/","Registre officiel des entreprises britanniques."],
+  ["entreprises","SEC EDGAR","https://www.sec.gov/edgar","Dépôts financiers des entreprises américaines."],
+  ["entreprises","OCCRP Aleph","https://aleph.occrp.org/","Moteur de recherche d'enquêtes et de registres."],
+  ["entreprises","ICIJ Offshore Leaks","https://offshoreleaks.icij.org/","Bases de données des sociétés offshore."],
+  ["entreprises","Registre de transparence UE","https://transparency-register.europa.eu/","Représentants d'intérêts auprès de l'Union européenne."],
+  ["entreprises","HATVP","https://www.hatvp.fr/","Déclarations de patrimoine et d'intérêts (France)."],
+  ["entreprises","Légifrance","https://www.legifrance.gouv.fr/","Textes de loi et jurisprudence officiels (France)."],
+  ["entreprises","BOAMP","https://www.boamp.fr/","Marchés publics français."],
+  ["entreprises","data.gouv.fr","https://www.data.gouv.fr/","Portail des données ouvertes de l'État français."],
+  ["entreprises","Carte des sanctions UE","https://www.sanctionsmap.eu/","Sanctions de l'Union européenne par pays."],
+  ["entreprises","Bundesanzeiger","https://www.bundesanzeiger.de/","Publications légales des entreprises allemandes."],
+  ["entreprises","Handelsregister","https://www.handelsregister.de/","Registre du commerce allemand."],
+  ["entreprises","Crunchbase","https://www.crunchbase.com/","Données sur les startups et les investisseurs."],
+  ["entreprises","ImportYeti","https://www.importyeti.com/","Données d'importation maritime aux États-Unis."],
+  ["entreprises","USAspending","https://www.usaspending.gov/","Dépenses fédérales américaines."],
+  ["entreprises","ProPublica Nonprofit Explorer","https://projects.propublica.org/nonprofits/","Déclarations fiscales des associations américaines."],
+  ["entreprises","OpenSecrets","https://www.opensecrets.org/","Financement de la vie politique américaine."],
+  ["entreprises","FEC","https://www.fec.gov/","Données de financement des campagnes électorales américaines."],
+  ["entreprises","OpenOwnership Register","https://register.openownership.org/","Registre des bénéficiaires effectifs des sociétés."],
+
+  // ---- Crypto & blockchain ----
+  ["crypto","Blockchain.com Explorer","https://www.blockchain.com/explorer","Explorateur de transactions Bitcoin."],
+  ["crypto","Etherscan","https://etherscan.io/","Explorateur de transactions Ethereum."],
+  ["crypto","Blockchair","https://blockchair.com/","Explorateur multi-blockchains."],
+  ["crypto","Mempool","https://mempool.space/","Explorateur Bitcoin et analyse des frais."],
+  ["crypto","BitInfoCharts","https://bitinfocharts.com/","Données et soldes de plusieurs cryptomonnaies."],
+  ["crypto","WalletExplorer","https://www.walletexplorer.com/","Regroupement d'adresses Bitcoin par portefeuille."],
+  ["crypto","Arkham Intelligence","https://intel.arkm.com/","Analyse de portefeuilles et de flux crypto."],
+  ["crypto","Breadcrumbs","https://www.breadcrumbs.app/","Visualisation des transactions entre portefeuilles."],
+  ["crypto","MetaSleuth","https://metasleuth.io/","Traçage de transactions sur plusieurs blockchains."],
+  ["crypto","Tronscan","https://tronscan.org/","Explorateur de la blockchain Tron."],
+  ["crypto","Solscan","https://solscan.io/","Explorateur de la blockchain Solana."],
+  ["crypto","OXT","https://oxt.me/","Analyse avancée des transactions Bitcoin."],
+  ["crypto","Bitcoin Abuse","https://www.bitcoinabuse.com/","Adresses Bitcoin signalées pour fraude."],
+  ["crypto","Dune","https://dune.com/","Requêtes et tableaux de bord sur les données blockchain."],
+  ["crypto","DeFiLlama","https://defillama.com/","Données sur la finance décentralisée (DeFi)."],
+  ["crypto","TokenSniffer","https://tokensniffer.com/","Analyse de risque des tokens et smart contracts."],
+
+  // ---- Actualités & médias ----
+  ["actus","Google News","https://news.google.com/","Agrégateur d'actualités mondiales."],
+  ["actus","Google Trends","https://trends.google.com/","Tendances de recherche par pays et période."],
+  ["actus","GDELT Project","https://www.gdeltproject.org/","Surveillance mondiale des médias en plusieurs langues."],
+  ["actus","Media Cloud","https://mediacloud.org/","Analyse de l'écosystème médiatique."],
+  ["actus","Event Registry","https://eventregistry.org/","Suivi d'événements et d'entités dans l'actualité."],
+  ["actus","Ground News","https://ground.news/","Comparer la couverture d'un même sujet par plusieurs médias."],
+  ["actus","Feedly","https://feedly.com/","Agrégateur de flux RSS pour veille."],
+  ["actus","Google Alerts","https://www.google.com/alerts","Alertes e-mail sur un sujet ou un nom."],
+  ["actus","Europresse","https://nouveau.europresse.com/","Presse française et internationale (accès via bibliothèques)."],
+
+  // ---- Ressources & formation ----
+  ["ressources","OSINT Framework","https://osintframework.com/","Arbre interactif de ressources OSINT."],
+  ["ressources","Bellingcat Toolkit","https://bellingcat.gitbook.io/toolkit","Ressources de vérification et d'enquête open source."],
+  ["ressources","IntelTechniques","https://inteltechniques.com/","Outils et formations OSINT de Michael Bazzell."],
+  ["ressources","Awesome OSINT","https://github.com/jivoi/awesome-osint","Liste curée d'outils et de ressources OSINT."],
+  ["ressources","Sector035","https://sector035.nl/","Blog et ressources OSINT néerlandaises."],
+  ["ressources","CyberChef","https://gchq.github.io/CyberChef/","Décodage, conversion et analyse de données."],
+  ["ressources","Obsidian","https://obsidian.md/","Prise de notes en Markdown pour organiser ses enquêtes."],
+  ["ressources","Gephi","https://gephi.org/","Visualisation et analyse de graphes et de réseaux."],
+  ["ressources","Timeline JS","https://timeline.knightlab.com/","Créer des chronologies interactives."],
+  ["ressources","Tails","https://tails.net/","Système d'exploitation portable orienté vie privée."],
+  ["ressources","Whonix","https://www.whonix.org/","Système d'exploitation pour l'anonymat en ligne."],
+  ["ressources","Kali Linux","https://www.kali.org/","Distribution Linux dédiée aux tests de sécurité."],
 ];
+
+const TOOLS = RAW.map(([cat, name, url, desc]) => ({ cat, name, url, desc }));
 
 /* ==========================================================
    3) MOTEUR (ne pas modifier sauf besoin)
@@ -567,10 +894,8 @@ function countUp(el, target, duration = 1600){
   requestAnimationFrame(step);
 }
 function runCounters(){
-  const t = document.querySelector('[data-count="tools"]');
-  const c = document.querySelector('[data-count="cats"]');
-  countUp(t, TOOLS.length);
-  countUp(c, CATEGORIES.length);
+  countUp(document.querySelector('[data-count="tools"]'), TOOLS.length);
+  countUp(document.querySelector('[data-count="cats"]'), CATEGORIES.length);
 }
 
 // Apparition au scroll
