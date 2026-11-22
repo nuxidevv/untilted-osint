@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untilted – Boîte à outils OSINT</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#121820; --card:#161e28; --border:#243041;
+    --text:#e6edf3; --muted:#8b98a8; --accent:#3ddc97; --accent2:#4da3ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    display:flex;flex-direction:column;
+  }
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:sticky;top:0;z-index:10;
+    background:rgba(11,15,20,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:14px 24px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+  }
+  .logo{font-weight:800;font-size:1.5rem;letter-spacing:-.5px;text-decoration:none;color:var(--text)}
+  .logo span{color:var(--accent)}
+  #search{
+    flex:1;min-width:200px;max-width:520px;padding:10px 14px;border-radius:10px;
+    border:1px solid var(--border);background:var(--panel);color:var(--text);
+    font-size:15px;outline:none;transition:border-color .2s;
+  }
+  #search:focus{border-color:var(--accent)}
+  .count{color:var(--muted);font-size:14px;margin-left:auto}
+
+  /* ---------- LAYOUT ---------- */
+  .layout{display:flex;flex:1;min-height:0}
+  aside{
+    width:260px;min-width:260px;border-right:1px solid var(--border);
+    padding:16px;background:var(--panel);
+    position:sticky;top:73px;height:calc(100vh - 73px);overflow-y:auto;
+  }
+  aside h3{
+    font-size:12px;text-transform:uppercase;color:var(--muted);
+    margin:8px 8px 10px;letter-spacing:1px;
+  }
+  .cat-btn{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    width:100%;background:none;border:none;color:var(--text);
+    padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;text-align:left;
+    margin-bottom:2px;transition:background .15s;
+  }
+  .cat-btn:hover{background:var(--card)}
+  .cat-btn.active{background:var(--accent);color:#04120c;font-weight:600}
+  .cat-btn .n{opacity:.7;font-size:12px}
+
+  main{flex:1;padding:24px;min-width:0}
+  .section-title{font-size:1.3rem;margin-bottom:18px}
+
+  /* ---------- CARDS ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:16px;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;gap:10px;
+    transition:transform .15s,border-color .15s;
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--accent2)}
+  .card-head{display:flex;gap:12px;align-items:center}
+  .card img{width:32px;height:32px;border-radius:6px;background:#ffffff14;flex-shrink:0}
+  .card h4{font-size:16px}
+  .card p{color:var(--muted);font-size:13.5px;line-height:1.45}
+  .card .tag{font-size:11.5px;color:var(--accent2);word-break:break-all;margin-top:auto}
+  .badge{
+    display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;
+    background:#3ddc9722;color:var(--accent);margin-top:2px;align-self:flex-start;
+  }
+  .empty{color:var(--muted);text-align:center;padding:60px 0;grid-column:1/-1}
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width:800px){
+    .layout{flex-direction:column}
+    aside{
+      width:100%;min-width:0;height:auto;position:static;
+      border-right:none;border-bottom:1px solid var(--border);
+      display:flex;flex-wrap:wrap;gap:6px;
+    }
+    aside h3{width:100%}
+    .cat-btn{width:auto}
+    .count{margin-left:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#" onclick="setCategory('all');return false;">Until<span>ted</span></a>
+  <input id="search" type="search" placeholder="Rechercher un outil… (touche /)" autocomplete="off">
+  <div class="count" id="count"></div>
+</header>
+
+<div class="layout">
+  <aside id="sidebar"></aside>
+  <main>
+    <h2 class="section-title" id="title">Tous les outils</h2>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<script>
+/* ==========================================================
+   1) CATÉGORIES
+   Pour en ajouter une : { id:'identifiant', name:'Nom affiché' }
+   ========================================================== */
+const CATEGORIES = [
+  { id: 'contact',   name: 'Contact Jetable' },
+  { id: 'domaines',  name: 'Domaines & IP' },
+  { id: 'archives',  name: 'Archives web' },
+  { id: 'fuites',    name: 'Fuites de données' },
+  { id: 'images',    name: 'Images & Métadonnées' },
+  { id: 'ressources',name: 'Ressources' },
+];
+
+/* ==========================================================
+   2) OUTILS
+   Pour en ajouter un : { cat:'id_categorie', name:'Nom', url:'https://...', desc:'Description' }
+   ========================================================== */
+const TOOLS = [
+  // ---- Contact Jetable ----
+  { cat:'contact', name:'OnlineSIM', url:'https://onlinesim.net/', desc:'Numéros virtuels temporaires pour recevoir des SMS de vérification.' },
+  { cat:'contact', name:'DoNotPay – Numéro temporaire', url:'https://donotpay.com/learn/temporary-phone-number/', desc:'Générer un numéro de téléphone temporaire.' },
+  { cat:'contact', name:'IntelTechniques VoIP Suite', url:'https://inteltechniques.com/voip.suite.html', desc:'Suite d\'outils VoIP de Michael Bazzell pour les recherches OSINT.' },
+  { cat:'contact', name:'IntelTechniques Twilio CLI', url:'https://inteltechniques.com/voip.twilio.cli.html', desc:'Utilisation de Twilio en ligne de commande pour l\'analyse VoIP.' },
+  { cat:'contact', name:'10 Minute Mail', url:'https://10minutemail.com/', desc:'Adresse e-mail jetable valable 10 minutes.' },
+  { cat:'contact', name:'AnonAddy', url:'https://anonaddy.com/', desc:'Alias e-mail anonymes redirigés vers votre boîte réelle.' },
+  { cat:'contact', name:'SimpleLogin', url:'https://simplelogin.io/', desc:'Alias e-mail pour protéger votre adresse principale.' },
+  { cat:'contact', name:'Maildrop', url:'https://maildrop.cc/', desc:'Boîte e-mail jetable, sans inscription.' },
+  { cat:'contact', name:'Globfone', url:'https://globfone.com/send-text/', desc:'Envoi de SMS en ligne.' },
+  { cat:'contact', name:'SendAText', url:'https://www.sendatext.co/', desc:'Envoi de SMS en ligne.' },
+  { cat:'contact', name:'FaxZero', url:'https://faxzero.com/', desc:'Envoi de fax gratuit en ligne.' },
+  { cat:'contact', name:'HS3X', url:'https://hs3x.com/', desc:'Numéros SMS temporaires.' },
+  { cat:'contact', name:'Free SMS Verification', url:'http://freesmsverification.com/', desc:'Numéros temporaires pour recevoir des SMS.' },
+  { cat:'contact', name:'SMSToMe', url:'https://smstome.com/', desc:'Numéros temporaires pour recevoir des SMS.' },
+  { cat:'contact', name:'AWS SNS', url:'https://aws.amazon.com/sns/', desc:'Service d\'envoi de SMS et de notifications d\'Amazon Web Services.' },
+  { cat:'contact', name:'Twilio', url:'https://www.twilio.com/', desc:'Plateforme API de communications (SMS, appels, vérification).' },
+  { cat:'contact', name:'Threader', url:'https://threader.app/thread/1199785692274077696', desc:'Lecteur de threads Twitter / X.' },
+
+  // ---- Exemples (à supprimer ou compléter) ----
+  { cat:'domaines', name:'crt.sh', url:'https://crt.sh', desc:'Recherche de certificats SSL/TLS pour découvrir des sous-domaines.' },
+  { cat:'domaines', name:'Shodan', url:'https://www.shodan.io', desc:'Moteur de recherche des appareils connectés à Internet.' },
+  { cat:'domaines', name:'urlscan.io', url:'https://urlscan.io', desc:'Analyse et capture de sites web.' },
+  { cat:'domaines', name:'VirusTotal', url:'https://www.virustotal.com', desc:'Analyse de fichiers, URL, domaines et IP.' },
+
+  { cat:'archives', name:'Wayback Machine', url:'https://web.archive.org', desc:'Consulter les anciennes versions de sites web.' },
+  { cat:'archives', name:'Archive.today', url:'https://archive.ph', desc:'Archiver et consulter des pages web figées.' },
+
+  { cat:'fuites', name:'Have I Been Pwned', url:'https://haveibeenpwned.com', desc:'Vérifier si une adresse e-mail apparaît dans une fuite de données.' },
+
+  { cat:'images', name:'TinEye', url:'https://tineye.com', desc:'Recherche d\'images inversée.' },
+  { cat:'images', name:'Google Lens', url:'https://lens.google.com', desc:'Recherche visuelle par image.' },
+  { cat:'images', name:'FotoForensics', url:'https://fotoforensics.com', desc:'Analyse ELA et métadonnées d\'images.' },
+
+  { cat:'ressources', name:'OSINT Framework', url:'https://osintframework.com', desc:'Arbre interactif de ressources OSINT.' },
+];
+
+/* ==========================================================
+   3) MOTEUR DU SITE (ne pas modifier sauf besoin)
+   ========================================================== */
+let currentCat = 'all';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function renderSidebar(){
+  const btn = (id, name, count) =>
+    `<button class="cat-btn ${currentCat===id?'active':''}" onclick="setCategory('${id}')">
+       <span>${esc(name)}</span><span class="n">${count}</span>
+     </button>`;
+  $('sidebar').innerHTML =
+    `<h3>Catégories</h3>` +
+    btn('all', 'Tous les outils', TOOLS.length) +
+    CATEGORIES.map(c => btn(c.id, c.name, TOOLS.filter(t => t.cat===c.id).length)).join('');
+}
+
+function renderGrid(){
+  const q = $('search').value.trim().toLowerCase();
+  const list = TOOLS.filter(t =>
+    (currentCat==='all' || t.cat===currentCat) &&
+    (!q || (t.name+' '+t.desc+' '+t.url).toLowerCase().includes(q))
+  );
+
+  const catName = currentCat==='all' ? 'Tous les outils'
+                 : (CATEGORIES.find(c=>c.id===currentCat)||{}).name;
+  $('title').textContent = catName;
+  $('count').textContent = `${list.length} outil(s)`;
+
+  $('grid').innerHTML = list.length ? list.map(t => {
+    let host = '';
+    try { host = new URL(t.url).hostname; } catch(e){}
+    const catLabel = (CATEGORIES.find(c=>c.id===t.cat)||{}).name || '';
+    return `
+      <a class="card" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer">
+        <div class="card-head">
+          <img src="https://www.google.com/s2/favicons?domain=${esc(host)}&sz=64" alt=""
+               onerror="this.style.visibility='hidden'">
+          <h4>${esc(t.name)}</h4>
+        </div>
+        <p>${esc(t.desc||'')}</p>
+        <span class="badge">${esc(catLabel)}</span>
+        <span class="tag">${esc(host)}</span>
+      </a>`;
+  }).join('') : `<div class="empty">Aucun outil ne correspond à votre recherche.</div>`;
+}
+
+function setCategory(id){
+  currentCat = id;
+  renderSidebar();
+  renderGrid();
+}
+
+$('search').addEventListener('input', renderGrid);
+
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== $('search')) {
+    e.preventDefault();
+    $('search').focus();
+  }
+});
+
+renderSidebar();
+renderGrid();
+</script>
+
+</body>
+</html>
