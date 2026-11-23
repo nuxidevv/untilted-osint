@@ -1126,11 +1126,20 @@ kbd {
   }
   window.addEventListener('hashchange', route);
 
-  /* ---------- Titre cliquable : bascule CSINT / Searcher ---------- */
+  /* ---------- Titre cliquable : mode sombre + searchers, sans défilement ---------- */
   const heroTitle = $('#heroTitle');
+  let prevTheme = html.getAttribute('data-theme') || 'light';
 
   function setOsint(on) {
     osintMode = on;
+
+    if (on) {
+      prevTheme = html.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      html.setAttribute('data-theme', 'dark');
+    } else {
+      html.setAttribute('data-theme', prevTheme);
+    }
+
     heroTitle.innerHTML = on ? HERO_CSINT : HERO_NORMAL;
     currentCat = on ? 'searcher' : 'all';
     query = '';
@@ -1138,8 +1147,6 @@ kbd {
     renderChips();
     renderGrid();
     setOpen(true);
-    const outils = document.getElementById('outils');
-    if (outils) outils.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
   heroTitle.addEventListener('click', function () { setOsint(!osintMode); });
