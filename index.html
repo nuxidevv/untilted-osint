@@ -1,1181 +1,1239 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" data-theme="light">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Untilted — Boîte à outils OSINT</title>
-<meta name="description" content="Une sélection d'outils OSINT classés par catégorie : recherche, filtres et accès rapide.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Untilted | Boîte à outils OSINT</title>
+<meta name="description" content="Untilted, une boîte à outils de recherche en sources ouvertes (OSINT), classée par catégorie.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('untilted-theme');
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+</script>
 <style>
-  /* ---------- Thèmes ---------- */
-  :root{
-    --ease:cubic-bezier(.22,1,.36,1);
-    --radius:18px;
-    --bg:#ffffff;
-    --ink:#0a0a0a;
-    --ink-rgb:10,10,10;
-    --muted:#6b6b73;
-    --line:rgba(10,10,10,.08);
-    --glass:rgba(255,255,255,.45);
-    --glass-hi:rgba(255,255,255,.7);
-    --glass-border:rgba(10,10,10,.08);
-    --glass-inner:rgba(255,255,255,.9);
-    --glass-shadow:rgba(10,10,10,.10);
-    --bar:rgba(255,255,255,.6);
-    --blob:rgba(10,10,10,.045);
-    --blur:blur(22px) saturate(170%);
-  }
-  html[data-theme="dark"]{
-    --bg:#070708;
-    --ink:#f5f5f7;
-    --ink-rgb:245,245,247;
-    --muted:#8e8e98;
-    --line:rgba(255,255,255,.08);
-    --glass:rgba(255,255,255,.04);
-    --glass-hi:rgba(255,255,255,.09);
-    --glass-border:rgba(255,255,255,.1);
-    --glass-inner:rgba(255,255,255,.14);
-    --glass-shadow:rgba(0,0,0,.55);
-    --bar:rgba(10,10,12,.55);
-    --blob:rgba(255,255,255,.05);
-    color-scheme:dark;
-  }
+:root {
+  --bg: #ffffff;
+  --fg: #000000;
+  --muted: rgba(0,0,0,.62);
+  --glass: rgba(255,255,255,.55);
+  --glass-border: rgba(0,0,0,.12);
+  --shadow: 0 10px 30px rgba(0,0,0,.06);
+  --radius: 18px;
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+html[data-theme="dark"] {
+  --bg: #000000;
+  --fg: #ffffff;
+  --muted: rgba(255,255,255,.66);
+  --glass: rgba(255,255,255,.06);
+  --glass-border: rgba(255,255,255,.14);
+  --shadow: 0 10px 30px rgba(0,0,0,.45);
+}
 
-  *{box-sizing:border-box;margin:0;padding:0}
-  [hidden]{display:none !important}
-  html{scroll-behavior:smooth}
-  body{
-    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.5;
-    -webkit-font-smoothing:antialiased;overflow-x:hidden;
-    transition:background-color .6s var(--ease),color .6s var(--ease);
-  }
-  body::before{
-    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:
-      radial-gradient(760px circle at 88% 4%,var(--blob),transparent 60%),
-      radial-gradient(640px circle at 4% 62%,var(--blob),transparent 60%);
-  }
-  ::selection{background:var(--ink);color:var(--bg)}
-  a{color:inherit}
-  button,input{font:inherit;color:inherit}
-  section{scroll-margin-top:110px}
-  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .35s ease, color .35s ease;
+}
+a { color: inherit; }
+img { display: block; }
+[hidden] { display: none !important; }
+button { font: inherit; }
 
-  /* ---------- Glow souris ---------- */
-  .glow{
-    position:fixed;left:0;top:0;width:520px;height:520px;border-radius:50%;
-    background:radial-gradient(circle,rgba(var(--ink-rgb),.05),transparent 65%);
-    pointer-events:none;z-index:0;will-change:transform;
-  }
+.container { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
 
-  /* ---------- Liquid glass (base commune) ---------- */
-  .header,.btn,.chip,.search input,.stat,.icon-btn,.to-top,.card,.card-icon,.card-arrow,.page-card,.empty,kbd{
-    background:var(--glass);
-    -webkit-backdrop-filter:var(--blur);
-    backdrop-filter:var(--blur);
-    border:1px solid var(--glass-border);
-    box-shadow:inset 0 1px 0 var(--glass-inner);
-  }
+/* Lumière suivant la souris */
+.glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 520px;
+  height: 520px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(127,127,127,.22), transparent 65%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.glow.on { opacity: 1; }
+main, header, footer { position: relative; z-index: 1; }
 
-  /* ---------- Header flottant ---------- */
-  .header{
-    position:fixed;top:14px;left:50%;transform:translateX(-50%);
-    width:min(1200px,calc(100% - 28px));height:64px;z-index:50;
-    border-radius:22px;background:var(--glass-hi);
-    box-shadow:inset 0 1px 0 var(--glass-inner),0 16px 40px -24px var(--glass-shadow);
-  }
-  .nav{
-    height:100%;padding:0 12px 0 20px;
-    display:flex;align-items:center;justify-content:space-between;gap:24px;
-  }
-  .nav-right{display:flex;align-items:center;gap:10px}
-  .logo{
-    display:flex;align-items:center;gap:10px;text-decoration:none;
-    font-weight:800;font-size:1.2rem;letter-spacing:-.03em;
-  }
-  .logo-mark{
-    width:28px;height:28px;border-radius:9px;background:var(--ink);
-    position:relative;transition:transform .6s var(--ease);
-  }
-  .logo-mark::after{
-    content:"";position:absolute;inset:8px;border:2px solid var(--bg);border-radius:50%;
-  }
-  .logo:hover .logo-mark{transform:rotate(180deg)}
-  .nav-links{display:flex;gap:30px;font-size:14px;color:var(--muted)}
-  .nav-links a{text-decoration:none;position:relative;transition:color .2s}
-  .nav-links a:hover{color:var(--ink)}
-  .nav-links a::after{
-    content:"";position:absolute;left:0;bottom:-6px;width:100%;height:1.5px;
-    background:var(--ink);transform:scaleX(0);transform-origin:right;
-    transition:transform .5s var(--ease);
-  }
-  .nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
+/* Header */
+.header {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1180px, calc(100% - 28px));
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px 10px 18px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--shadow);
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: -.02em;
+}
+.logo-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--fg);
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: .8rem;
+  font-weight: 700;
+}
+.nav-links { display: flex; gap: 22px; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: .92rem;
+  font-weight: 500;
+  transition: color .2s ease;
+}
+.nav-links a:hover { color: var(--fg); }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--fg);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform .2s ease, background-color .2s ease;
+}
+.icon-btn:hover { transform: translateY(-1px); }
+.i-sun { display: none; }
+html[data-theme="dark"] .i-sun { display: block; }
+html[data-theme="dark"] .i-moon { display: none; }
 
-  /* ---------- Bouton thème ---------- */
-  .icon-btn{
-    width:40px;height:40px;border-radius:50%;cursor:pointer;color:var(--ink);
-    display:grid;place-items:center;position:relative;
-    transition:transform .4s var(--ease),background .3s,border-color .3s;
-  }
-  .icon-btn:hover{transform:translateY(-1px) rotate(12deg);background:var(--glass-hi)}
-  .icon-btn svg{grid-area:1/1;transition:opacity .4s,transform .6s var(--ease)}
-  .icon-btn .i-moon{opacity:1}
-  .icon-btn .i-sun{opacity:0;transform:rotate(-90deg)}
-  html[data-theme="dark"] .icon-btn .i-moon{opacity:0;transform:rotate(90deg)}
-  html[data-theme="dark"] .icon-btn .i-sun{opacity:1;transform:none}
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--fg);
+  font-weight: 600;
+  font-size: .95rem;
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--fg); color: var(--bg); border-color: transparent; }
+.btn-sm { padding: 8px 14px; font-size: .85rem; }
+kbd {
+  font-family: var(--mono);
+  font-size: .72rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 6px;
+  padding: 2px 7px;
+  color: var(--muted);
+}
 
-  /* ---------- Boutons ---------- */
-  .btn{
-    position:relative;overflow:hidden;
-    display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    padding:14px 22px;border-radius:999px;color:var(--ink);
-    text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;
-    transition:transform .4s var(--ease),background .3s,border-color .3s,box-shadow .3s;
-  }
-  .btn::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);
-    transform:translateX(-120%);transition:transform 1s var(--ease);
-  }
-  .btn:hover::after{transform:translateX(120%)}
-  .btn:hover{transform:translateY(-2px);border-color:rgba(var(--ink-rgb),.3)}
-  .btn-primary{
-    background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9);
-  }
-  .btn-primary:hover{background:rgba(var(--ink-rgb),1);border-color:rgba(var(--ink-rgb),1)}
-  .btn-sm{padding:9px 16px;font-size:14px}
-  kbd{
-    font-family:"JetBrains Mono",monospace;font-size:11px;padding:2px 6px;
-    border-radius:6px;color:var(--muted);
-  }
+/* Bouton Osint : pulsation discrète pour signaler qu'il est cliquable */
+.osint-btn { cursor: pointer; transition: transform .25s ease, box-shadow .25s ease; }
+.osint-btn.pulse { animation: osintPulse 2.6s ease-in-out infinite; }
+.osint-btn.pulse:hover,
+.osint-btn.pulse:focus-visible { animation-play-state: paused; }
+.osint-btn.active { box-shadow: inset 0 0 0 2px rgba(127,127,127,.6); font-weight: 700; }
+@keyframes osintPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
 
-  /* ---------- Hero ---------- */
-  .hero{
-    position:relative;isolation:isolate;
-    max-width:1200px;margin:0 auto;padding:170px 24px 96px;
-  }
-  .hero::before{
-    content:"";position:absolute;inset:0 -24px;z-index:-1;pointer-events:none;
-    background-image:
-      linear-gradient(var(--line) 1px,transparent 1px),
-      linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:56px 56px;
-    mask-image:radial-gradient(ellipse at 75% 20%,#000 5%,transparent 70%);
-    -webkit-mask-image:radial-gradient(ellipse at 75% 20%,#000 5%,transparent 70%);
-    opacity:.6;
-  }
-  h1{
-    font-size:clamp(2.8rem,7.5vw,6rem);line-height:1;letter-spacing:-.05em;font-weight:800;
-  }
-  .line{display:block;overflow:hidden;padding-bottom:.08em}
-  .line span{display:inline-block;transform:translateY(110%);animation:lineUp 1.1s var(--ease) forwards}
-  .line + .line span{animation-delay:.12s}
-  h1 em{font-style:normal;color:var(--muted)}
-  .lead{
-    margin-top:28px;max-width:560px;font-size:1.1rem;color:var(--muted);line-height:1.65;
-  }
-  .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}
-  .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:64px}
-  .stat{
-    padding:18px 24px;border-radius:var(--radius);min-width:180px;
-  }
-  .stat strong{display:block;font-size:2.2rem;font-weight:800;letter-spacing:-.04em;line-height:1.1}
-  .stat span{font-size:13px;color:var(--muted)}
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 140px 0 80px;
+}
+.hero h1 {
+  font-size: clamp(2.6rem, 7vw, 5.6rem);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+  font-weight: 800;
+  margin: 0 0 22px;
+}
+.line { display: block; animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.line:nth-child(2) { animation-delay: .12s; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.lead {
+  font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+  color: var(--muted);
+  max-width: 620px;
+  margin: 0 0 34px;
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 56px;
+  max-width: 760px;
+}
+.stat {
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.stat b { display: block; font-size: 2rem; letter-spacing: -.03em; font-weight: 800; }
+.stat span { color: var(--muted); font-size: .9rem; }
 
-  /* ---------- Marquee ---------- */
-  .marquee{
-    border-block:1px solid var(--line);overflow:hidden;padding:22px 0;
-  }
-  .marquee-track{display:flex;width:max-content;animation:marquee 60s linear infinite}
-  .marquee:hover .marquee-track{animation-play-state:paused}
-  .group{display:flex;align-items:center}
-  .group span{
-    position:relative;display:inline-block;white-space:nowrap;
-    padding-right:56px;font-size:clamp(1.3rem,2.6vw,1.9rem);font-weight:700;letter-spacing:-.03em;
-  }
-  .group span:nth-child(even){color:transparent;-webkit-text-stroke:1px var(--ink)}
-  .group span::after{
-    content:"";position:absolute;right:24px;top:50%;width:7px;height:7px;margin-top:-3px;
-    border-radius:50%;background:var(--ink);
-  }
+/* Bandeau des catégories */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--glass-border);
+  padding: 16px 0;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marq 45s linear infinite;
+}
+.marquee-track span {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: .95rem;
+  padding-right: 40px;
+}
+.marquee-track span::after { content: "•"; margin-left: 40px; opacity: .5; }
+@keyframes marq {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 
-  /* ---------- Barre d'outils (arrondie) ---------- */
-  .toolbar{
-    position:sticky;top:92px;z-index:30;
-    max-width:1200px;margin:0 auto;padding:0 24px;
-  }
-  .toolbar-inner{
-    display:flex;gap:20px;align-items:center;justify-content:space-between;
-    padding:12px 12px 12px 16px;border-radius:24px;
-    background:var(--bar);
-    -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
-    border:1px solid var(--glass-border);
-    box-shadow:inset 0 1px 0 var(--glass-inner),0 16px 40px -28px var(--glass-shadow);
-  }
-  .chips{
-    display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;padding:4px 0;
-  }
-  .chips::-webkit-scrollbar{display:none}
-  .chip{
-    flex-shrink:0;display:inline-flex;align-items:center;gap:8px;
-    padding:8px 14px;border-radius:999px;color:var(--ink);
-    font-size:13.5px;font-weight:500;cursor:pointer;
-    transition:background .3s,color .3s,border-color .3s,transform .3s var(--ease);
-  }
-  .chip span{font-size:12px;opacity:.5}
-  .chip:hover{transform:translateY(-1px);border-color:rgba(var(--ink-rgb),.3)}
-  .chip.active{background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9)}
-  .search{position:relative;display:flex;align-items:center;width:320px;max-width:100%;flex-shrink:0}
-  .search svg{position:absolute;left:16px;color:var(--muted);pointer-events:none}
-  .search input{
-    width:100%;padding:11px 48px 11px 42px;border-radius:999px;
-    outline:none;font-size:15px;color:var(--ink);
-    transition:border-color .3s,background .3s,box-shadow .3s;
-  }
-  .search input::placeholder{color:var(--muted)}
-  .search input:focus{border-color:rgba(var(--ink-rgb),.4);background:var(--glass-hi);box-shadow:inset 0 1px 0 var(--glass-inner),0 0 0 4px rgba(var(--ink-rgb),.06)}
-  .search input:focus ~ kbd{opacity:0}
-  .search kbd{position:absolute;right:14px;transition:opacity .2s}
+/* Outils */
+#outils { padding: 90px 0; scroll-margin-top: 90px; }
+.toolbar {
+  border-radius: 24px;
+  padding: 14px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+}
+.toolbar-inner { display: flex; flex-direction: column; gap: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--muted);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: .84rem;
+  cursor: pointer;
+  transition: background-color .2s ease, color .2s ease;
+}
+.chip:hover { color: var(--fg); }
+.chip.active { background: var(--fg); color: var(--bg); border-color: transparent; }
+.chip .n { opacity: .6; margin-left: 6px; font-family: var(--mono); font-size: .75rem; }
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--muted);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 500 .95rem var(--font);
+}
+.search input::placeholder { color: var(--muted); }
+.tools-toggle-wrap { display: flex; justify-content: center; margin: 0 0 18px; }
+.tools-toggle svg { transition: transform .3s ease; }
+.tools-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.tools-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .45s ease;
+}
+.tools-wrap.open { grid-template-rows: 1fr; }
+.tools-inner { overflow: hidden; min-height: 0; }
+.results {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 6px 0 14px;
+}
+#title { margin: 0; font-size: 1.1rem; font-weight: 700; }
+#count { color: var(--muted); font-size: .9rem; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.tool {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  text-decoration: none;
+  transition: transform .2s ease, background-color .2s ease;
+}
+.tool:hover { transform: translateY(-2px); }
+.tool > img { width: 28px; height: 28px; border-radius: 7px; flex: none; margin-top: 2px; }
+.tool > span { min-width: 0; }
+.tool-cat {
+  display: block;
+  font-family: var(--mono);
+  font-size: .68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 4px;
+}
+.tool-name { display: block; font-weight: 600; }
+.tool-desc { display: block; color: var(--muted); font-size: .88rem; margin-top: 3px; }
+.empty { color: var(--muted); grid-column: 1 / -1; }
 
-  /* ---------- Bouton « Afficher tous les outils » ---------- */
-  .tools-toggle-wrap{
-    max-width:1200px;margin:0 auto;padding:40px 24px 0;
-    display:flex;justify-content:center;
-  }
-  .tools-toggle{padding:14px 24px}
-  .tools-toggle svg{transition:transform .5s var(--ease)}
-  .tools-toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+/* Grille des searchers (mode Osint) */
+.osint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 8px;
+}
+.osint-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(127,127,127,.08);
+  border: 1px solid rgba(127,127,127,.22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform .2s ease, background-color .2s ease;
+}
+.osint-card:hover { transform: translateY(-2px); background: rgba(127,127,127,.14); }
+.osint-card img { border-radius: 8px; flex: none; }
+.osint-name {
+  display: block;
+  font-weight: 600;
+  font-family: var(--mono);
+  font-size: .95rem;
+  word-break: break-all;
+}
 
-  /* ---------- Liste d'outils dépliable ---------- */
-  .tools-wrap{
-    display:grid;grid-template-rows:0fr;
-    transition:grid-template-rows .6s var(--ease);
-  }
-  .tools-wrap.open{grid-template-rows:1fr}
-  .tools-inner{overflow:hidden;min-height:0}
+/* Pages d'information */
+.info-page { min-height: 100vh; padding: 130px 0 90px; }
+.info-inner { max-width: 760px; margin-inline: auto; }
+.info-inner h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: -.03em;
+  margin: 18px 0 22px;
+}
+.info-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.info-card h3 { margin: 28px 0 8px; font-size: 1.1rem; }
+.info-card h3:first-child { margin-top: 0; }
+.info-card p { color: var(--muted); margin: 0 0 8px; }
+.center { display: flex; justify-content: center; margin-top: 26px; }
 
-  /* ---------- Résultats ---------- */
-  .results{max-width:1200px;margin:0 auto;padding:40px 24px 120px}
-  .results-head{margin-bottom:32px}
-  .idx{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);letter-spacing:.02em}
-  .results h2{
-    margin-top:8px;font-size:clamp(1.8rem,3.2vw,2.5rem);font-weight:800;letter-spacing:-.04em;
-  }
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+/* Footer */
+.footer {
+  margin-top: 60px;
+  border-top: 1px solid var(--glass-border);
+  padding: 60px 0 30px;
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.footer-inner { display: grid; grid-template-columns: 1.4fr 1fr; gap: 40px; }
+.footer-brand p { color: var(--muted); max-width: 420px; margin: 14px 0 0; }
+.footer-col h4 { margin: 0 0 12px; font-size: .9rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.footer-col a {
+  display: block;
+  color: var(--fg);
+  text-decoration: none;
+  padding: 4px 0;
+  opacity: .85;
+}
+.footer-col a:hover { opacity: 1; text-decoration: underline; }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+  color: var(--muted);
+  font-size: .85rem;
+}
 
-  /* ---------- Cartes ---------- */
-  .card{
-    --mx:50%;--my:50%;
-    position:relative;isolation:isolate;overflow:hidden;
-    display:flex;flex-direction:column;gap:14px;padding:22px;
-    border-radius:var(--radius);color:var(--ink);text-decoration:none;
-    transition:transform .5s var(--ease),border-color .3s,background .3s,box-shadow .5s var(--ease);
-    animation:cardIn .8s var(--ease) backwards;
-    animation-delay:calc(min(var(--i,0),14) * 35ms);
-  }
-  .card::before{
-    content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .4s;
-    background:radial-gradient(320px circle at var(--mx) var(--my),rgba(var(--ink-rgb),.08),transparent 70%);
-  }
-  .card:hover{
-    transform:translateY(-4px);background:var(--glass-hi);
-    border-color:rgba(var(--ink-rgb),.22);
-    box-shadow:inset 0 1px 0 var(--glass-inner),0 24px 40px -24px var(--glass-shadow);
-  }
-  .card:hover::before{opacity:1}
-  .card-top{display:flex;justify-content:space-between;align-items:flex-start}
-  .card-icon{
-    width:44px;height:44px;border-radius:12px;
-    display:grid;place-items:center;overflow:hidden;
-    transition:transform .5s var(--ease);
-  }
-  .card:hover .card-icon{transform:scale(1.06)}
-  .card-icon img{width:24px;height:24px}
-  .card-arrow{
-    width:36px;height:36px;border-radius:50%;color:var(--ink);
-    display:grid;place-items:center;
-    transition:transform .5s var(--ease),background .3s,color .3s,border-color .3s;
-  }
-  .card:hover .card-arrow{background:rgba(var(--ink-rgb),.9);color:var(--bg);border-color:rgba(var(--ink-rgb),.9);transform:rotate(45deg)}
-  .card h3{font-size:1.08rem;font-weight:700;letter-spacing:-.02em}
-  .card p{font-size:14px;color:var(--muted);line-height:1.6}
-  .card-foot{
-    margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);
-    display:flex;justify-content:space-between;gap:12px;align-items:center;
-    font-size:12px;color:var(--muted);
-  }
-  .card-foot span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-  .card-foot span:last-child{
-    font-family:"JetBrains Mono",monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    flex-shrink:0;max-width:45%;
-  }
-  .empty{
-    grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--muted);
-    border-radius:var(--radius);
-  }
+/* Bouton retour en haut */
+.to-top {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--fg);
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: opacity .3s ease;
+}
+.to-top.show { opacity: 1; pointer-events: auto; }
 
-  /* ---------- Pages d'information ---------- */
-  .info-page{padding:150px 24px 120px;min-height:70vh}
-  .info-page:not([hidden]){animation:cardIn .8s var(--ease)}
-  .page-back{margin-bottom:28px}
-  .page-card{
-    max-width:820px;margin:0 auto;padding:44px;border-radius:var(--radius);
-  }
-  .page-card h1{
-    font-size:clamp(2rem,4.5vw,3rem);font-weight:800;letter-spacing:-.04em;line-height:1.08;margin-bottom:20px;
-  }
-  .page-card h2{font-size:1.05rem;font-weight:700;letter-spacing:-.01em;margin:30px 0 8px}
-  .page-card p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:12px}
-  .page-link{margin-top:14px}
+/* Apparition au scroll */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
 
-  /* ---------- Footer ---------- */
-  .footer{border-top:1px solid var(--line);padding:72px 24px 40px}
-  .footer-inner{
-    max-width:1200px;margin:0 auto;
-    display:grid;grid-template-columns:1.6fr 1fr;gap:40px;
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+}
+@media (max-width: 720px) {
+  .stats { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr; }
+  .info-card { padding: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
-  .footer-brand p{color:var(--muted);font-size:14px;margin-top:14px;max-width:340px}
-  .footer-col{display:flex;flex-direction:column;gap:12px}
-  .footer-col h4{
-    font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
-    font-weight:600;margin-bottom:4px;
-  }
-  .footer-col a{
-    text-decoration:none;font-size:14.5px;color:var(--ink);width:fit-content;
-    transition:color .2s,opacity .2s;opacity:.85;
-  }
-  .footer-col a:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
-  .footer-bottom{
-    max-width:1200px;margin:48px auto 0;padding-top:24px;border-top:1px solid var(--line);
-    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
-    font-size:13px;color:var(--muted);
-  }
-
-  /* ---------- Retour en haut ---------- */
-  .to-top{
-    position:fixed;right:24px;bottom:24px;width:46px;height:46px;border-radius:50%;
-    cursor:pointer;color:var(--ink);z-index:40;
-    display:grid;place-items:center;opacity:0;transform:translateY(14px);pointer-events:none;
-    transition:opacity .4s,transform .5s var(--ease),background .3s,border-color .3s;
-  }
-  .to-top.show{opacity:1;transform:none;pointer-events:auto}
-  .to-top:hover{background:var(--glass-hi);transform:translateY(-2px)}
-
-  /* ---------- Apparition au scroll ---------- */
-  .reveal{opacity:0;transform:translateY(32px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
-  .reveal.in{opacity:1;transform:none}
-
-  /* ---------- Animations ---------- */
-  @keyframes lineUp{to{transform:translateY(0)}}
-  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
-  @keyframes marquee{to{transform:translateX(-50%)}}
-
-  /* ---------- Responsive ---------- */
-  @media (max-width:820px){
-    .nav-links{display:none}
-    .hero{padding-top:150px}
-    .toolbar-inner{flex-direction:column;align-items:stretch;gap:12px}
-    .search{width:100%}
-    .footer-inner{grid-template-columns:1fr}
-  }
-  @media (max-width:520px){
-    .hero-actions{flex-direction:column}
-    .hero-actions .btn{width:100%}
-    .stat{min-width:0;flex:1 1 140px}
-    .footer-inner{grid-template-columns:1fr}
-    .to-top{right:16px;bottom:16px}
-    .nav{padding-left:16px}
-    .page-card{padding:28px 22px}
-    .info-page{padding-top:130px}
-  }
-
-  /* ---------- Mouvement réduit ---------- */
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{
-      animation-duration:.01ms !important;animation-iteration-count:1 !important;
-      transition-duration:.01ms !important;scroll-behavior:auto !important;
-    }
-    .reveal{opacity:1;transform:none}
-    .glow{display:none}
-  }
+}
 </style>
 </head>
 <body>
 
-<div class="glow" id="glow"></div>
+<div class="glow" id="glow" aria-hidden="true"></div>
 
-<header class="header" id="header">
-  <nav class="nav">
-    <a href="#top" class="logo"><span class="logo-mark"></span>Untilted</a>
-    <div class="nav-links">
-      <a href="#outils">Outils</a>
-      <a href="#outils" data-jump="all">Catégories</a>
-      <a href="#apropos">À propos</a>
-    </div>
-    <div class="nav-right">
-      <button class="icon-btn" id="themeToggle" type="button" aria-label="Passer en thème sombre">
-        <svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        <svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-      </button>
-      <a href="#outils" class="btn btn-primary btn-sm">Explorer</a>
-    </div>
+<header class="header">
+  <a class="logo" href="#top" aria-label="Untilted, accueil">
+    <span class="logo-mark">U</span><span>Untilted</span>
+  </a>
+  <nav class="nav-links" aria-label="Navigation principale">
+    <a href="#outils">Outils</a>
+    <a href="#outils" data-jump="all">Catégories</a>
+    <a href="#apropos">À propos</a>
   </nav>
+  <div class="header-actions">
+    <button type="button" class="icon-btn" id="themeToggle" aria-label="Changer de thème" title="Changer de thème">
+      <svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <a class="btn btn-primary btn-sm" href="#outils">Explorer</a>
+  </div>
 </header>
 
 <main id="top">
-
   <div id="home">
 
-    <!-- HERO -->
     <section class="hero">
-      <h1>
-        <span class="line"><span>Tous vos outils OSINT</span></span>
-        <span class="line"><span><em>au même endroit.</em></span></span>
-      </h1>
-      <p class="lead reveal">
-        Une sélection d'outils de renseignement en sources ouvertes, classés par catégorie.
-        Recherchez, filtrez et accédez directement à l'outil dont vous avez besoin.
-      </p>
-      <div class="hero-actions reveal">
-        <a href="#outils" class="btn btn-primary">Explorer les outils →</a>
-        <button class="btn" id="focusSearch" type="button">Rechercher <kbd>/</kbd></button>
-      </div>
-      <div class="stats reveal" id="stats">
-        <div class="stat"><strong data-count="tools">0</strong><span>Outils référencés</span></div>
-        <div class="stat"><strong data-count="cats">0</strong><span>Catégories</span></div>
-        <div class="stat"><strong>100%</strong><span>Sources ouvertes</span></div>
+      <div class="container">
+        <h1 id="heroTitle"><span class="line">Tous vos outils OSINT</span> <span class="line">au même endroit.</span></h1>
+        <p class="lead">Une sélection d'outils de renseignement en sources ouvertes, classés par catégorie. Recherchez, filtrez et accédez directement à l'outil dont vous avez besoin.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#outils">Explorer les outils →</a>
+          <button type="button" class="btn osint-btn pulse" id="osintToggle" aria-pressed="false">Osint</button>
+          <button type="button" class="btn" id="focusSearch">Rechercher <kbd>/</kbd></button>
+        </div>
+        <div class="stats" id="stats">
+          <div class="stat reveal"><b data-count="tools">0</b><span>Outils référencés</span></div>
+          <div class="stat reveal"><b data-count="cats">0</b><span>Catégories</span></div>
+          <div class="stat reveal"><b>100%</b><span>Sources ouvertes</span></div>
+        </div>
       </div>
     </section>
 
-    <!-- MARQUEE -->
-    <div class="marquee reveal" aria-hidden="true">
-      <div class="marquee-track" id="marquee"></div>
-    </div>
+    <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marqueeTrack"></div></div>
 
-    <!-- EXPLORATION -->
     <section id="outils">
-      <div class="toolbar">
-        <div class="toolbar-inner">
-          <div class="chips" id="chips" role="tablist" aria-label="Catégories"></div>
-          <label class="search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-            <input id="search" type="search" placeholder="Rechercher un outil…" autocomplete="off" aria-label="Rechercher un outil">
-            <kbd>/</kbd>
-          </label>
+      <div class="container">
+
+        <div class="toolbar">
+          <div class="toolbar-inner">
+            <div class="chips" id="chips" role="group" aria-label="Catégories"></div>
+            <label class="search" for="search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input id="search" type="search" placeholder="Rechercher un outil…" autocomplete="off">
+              <kbd>/</kbd>
+            </label>
+          </div>
         </div>
-      </div>
 
-      <div class="tools-toggle-wrap">
-        <button class="btn tools-toggle" id="toolsToggle" type="button" aria-expanded="false" aria-controls="toolsWrap">
-          <span>Afficher tous les outils</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-      </div>
+        <div class="tools-toggle-wrap">
+          <button type="button" class="btn tools-toggle" id="toolsToggle" aria-expanded="false" aria-controls="toolsWrap">
+            <span>Afficher tous les outils</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
 
-      <div class="tools-wrap" id="toolsWrap" inert>
-        <div class="tools-inner">
-          <div class="results">
-            <div class="results-head reveal">
-              <p class="idx" id="count"></p>
-              <h2 id="title">Tous les outils</h2>
+        <div class="tools-wrap" id="toolsWrap">
+          <div class="tools-inner">
+            <div class="results">
+              <h3 id="title">Tous les outils</h3>
+              <span id="count"></span>
             </div>
             <div class="grid" id="grid"></div>
           </div>
         </div>
+
       </div>
     </section>
 
   </div>
 
-  <!-- PAGES D'INFORMATION -->
   <section class="info-page" id="apropos" hidden>
-    <div class="page-card">
-      <a class="btn btn-sm page-back" href="#outils">← Retour aux outils</a>
-      <h1>À propos</h1>
-      <p>Untilted rassemble des outils de recherche en sources ouvertes (OSINT) pour les journalistes, chercheurs, enquêteurs et curieux. Les outils sont classés par catégorie et accessibles en un clic.</p>
-    </div>
+    <div class="container"><div class="info-inner">
+      <a class="btn" href="#outils">← Retour aux outils</a>
+      <h2>À propos</h2>
+      <div class="info-card">
+        <p>Untilted rassemble des outils de recherche en sources ouvertes (OSINT) pour les journalistes, chercheurs, enquêteurs et curieux. Les outils sont classés par catégorie et accessibles en un clic. Le bouton « Osint » de la page d'accueil affiche une sélection de moteurs de recherche spécialisés et passe le site en thème sombre.</p>
+      </div>
+    </div></div>
   </section>
 
   <section class="info-page" id="legal" hidden>
-    <div class="page-card">
-      <a class="btn btn-sm page-back" href="#outils">← Retour aux outils</a>
-      <h1>Avertissement légal</h1>
-      <p>Ce site recense des services publics à titre informatif et éducatif. Untilted ne gère pas les outils listés et n'est pas responsable de leur contenu ni de leur usage.</p>
-      <h2>Usage</h2>
-      <p>Toute recherche sur une personne doit respecter la loi, dont le RGPD, ainsi que les conditions d'utilisation des plateformes. Les outils de reconnaissance faciale ne sont pas référencés.</p>
-    </div>
+    <div class="container"><div class="info-inner">
+      <a class="btn" href="#outils">← Retour aux outils</a>
+      <h2>Avertissement légal</h2>
+      <div class="info-card">
+        <p>Ce site recense des services publics à titre informatif et éducatif. Untilted ne gère pas les outils listés et n'est pas responsable de leur contenu ni de leur usage. Les moteurs de la sélection Osint sont des services tiers.</p>
+        <h3>Usage</h3>
+        <p>Toute recherche sur une personne doit respecter la loi, dont le RGPD, ainsi que les conditions d'utilisation des plateformes. Les outils de reconnaissance faciale ne sont pas référencés.</p>
+      </div>
+    </div></div>
   </section>
 
   <section class="info-page" id="confidentialite" hidden>
-    <div class="page-card">
-      <a class="btn btn-sm page-back" href="#outils">← Retour aux outils</a>
-      <h1>Confidentialité</h1>
-      <p>Le site ne demande aucun compte et ne contient aucun formulaire.</p>
-      <h2>Données stockées</h2>
-      <p>Le thème choisi (clair ou sombre) est enregistré localement dans votre navigateur.</p>
-      <h2>Services tiers</h2>
-      <p>Les icônes et les polices sont chargées depuis les serveurs de Google. Les sites ouverts par les liens ont leurs propres politiques de confidentialité.</p>
-    </div>
+    <div class="container"><div class="info-inner">
+      <a class="btn" href="#outils">← Retour aux outils</a>
+      <h2>Confidentialité</h2>
+      <div class="info-card">
+        <p>Le site ne demande aucun compte et ne contient aucun formulaire.</p>
+        <h3>Données stockées</h3>
+        <p>Le thème choisi (clair ou sombre) est enregistré localement dans votre navigateur. Le mode Osint n'est pas mémorisé.</p>
+        <h3>Services tiers</h3>
+        <p>Les icônes et les polices sont chargées depuis les serveurs de Google. Les icônes des sites de la sélection Osint sont aussi chargées depuis Google. Les sites ouverts par les liens ont leurs propres politiques de confidentialité.</p>
+      </div>
+    </div></div>
   </section>
 
   <section class="info-page" id="contact" hidden>
-    <div class="page-card">
-      <a class="btn btn-sm page-back" href="#outils">← Retour aux outils</a>
-      <h1>Contact</h1>
-      <p>Pour proposer un outil, signaler un lien ou poser une question, rejoignez notre serveur Discord.</p>
-      <a class="btn btn-primary page-link" href="https://discord.gg/b8UktZArKt" target="_blank" rel="noopener noreferrer">Untilted | Osint</a>
-    </div>
+    <div class="container"><div class="info-inner">
+      <a class="btn" href="#outils">← Retour aux outils</a>
+      <h2>Contact</h2>
+      <div class="info-card">
+        <p>Pour proposer un outil, signaler un lien cassé ou poser une question, rejoignez notre serveur Discord.</p>
+        <div class="center">
+          <a class="btn btn-primary" href="https://discord.gg/b8UktZArKt" target="_blank" rel="noopener noreferrer">Untilted | Osint</a>
+        </div>
+      </div>
+    </div></div>
   </section>
-
 </main>
 
 <footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <a href="#top" class="logo"><span class="logo-mark"></span>Untilted</a>
-      <p>Une boîte à outils de recherche en sources ouvertes, classée par catégorie et prête à l'emploi.</p>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="logo" href="#top"><span class="logo-mark">U</span><span>Untilted</span></a>
+        <p>Une boîte à outils de recherche en sources ouvertes, classée par catégorie et prête à l'emploi.</p>
+      </div>
+      <nav class="footer-col" aria-label="Informations">
+        <h4>Informations</h4>
+        <a href="#apropos">À propos</a>
+        <a href="#legal">Avertissement légal</a>
+        <a href="#confidentialite">Confidentialité</a>
+        <a href="#contact">Contact</a>
+      </nav>
     </div>
-    <nav class="footer-col" aria-label="Informations">
-      <h4>Informations</h4>
-      <a href="#apropos">À propos</a>
-      <a href="#legal">Avertissement légal</a>
-      <a href="#confidentialite">Confidentialité</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© <span id="year"></span> Untilted. Tous droits réservés.</p>
-    <p>Boîte à outils</p>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Untilted. Tous droits réservés.</span>
+      <span>Boîte à outils OSINT</span>
+    </div>
   </div>
 </footer>
 
-<button class="to-top glass" id="toTop" aria-label="Revenir en haut" type="button">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-</button>
+<button type="button" class="to-top" id="toTop" aria-label="Retour en haut de page">↑</button>
 
 <script>
-/* ==========================================================
-   1) CATÉGORIES
-   Pour en ajouter une : { id:'identifiant', name:'Nom affiché' }
-   ========================================================== */
-const CATEGORIES = [
-  { id:'contact',     name:'Contact Jetable' },
-  { id:'moteurs',     name:'Moteurs de recherche' },
-  { id:'personnes',   name:'Personnes & identité' },
-  { id:'username',    name:'Pseudos & comptes' },
-  { id:'email',       name:'E-mail' },
-  { id:'telephone',   name:'Téléphone' },
-  { id:'reseaux',     name:'Réseaux sociaux' },
-  { id:'domaines',    name:'Domaines & IP' },
-  { id:'cyber',       name:'Menaces & Dark web' },
-  { id:'fuites',      name:'Fuites de données' },
-  { id:'archives',    name:'Archives web' },
-  { id:'images',      name:'Images & Métadonnées' },
-  { id:'video',       name:'Vidéo & Deepfakes' },
-  { id:'documents',   name:'Documents & Savoir' },
-  { id:'geo',         name:'Géolocalisation' },
-  { id:'transport',   name:'Transport & trafic' },
-  { id:'entreprises', name:'Entreprises & registres' },
-  { id:'crypto',      name:'Crypto & blockchain' },
-  { id:'actus',       name:'Actualités & médias' },
-  { id:'ressources',  name:'Ressources & formation' },
-];
+(function () {
+  'use strict';
 
-/* ==========================================================
-   2) OUTILS
-   Format : ["catégorie", "Nom", "URL", "Description"]
-   Pour ajouter un outil, ajoute simplement une ligne dans RAW.
-   ========================================================== */
-const RAW = [
-  // ---- Contact jetable ----
-  ["contact","OnlineSIM","https://onlinesim.net/","Numéros virtuels temporaires pour recevoir des SMS de vérification."],
-  ["contact","DoNotPay – Numéro temporaire","https://donotpay.com/learn/temporary-phone-number/","Générer un numéro de téléphone temporaire."],
-  ["contact","IntelTechniques VoIP Suite","https://inteltechniques.com/voip.suite.html","Suite d'outils VoIP pour les recherches OSINT."],
-  ["contact","IntelTechniques Twilio CLI","https://inteltechniques.com/voip.twilio.cli.html","Utiliser Twilio en ligne de commande pour l'analyse VoIP."],
-  ["contact","10 Minute Mail","https://10minutemail.com/","Adresse e-mail jetable valable 10 minutes."],
-  ["contact","AnonAddy","https://anonaddy.com/","Alias e-mail anonymes redirigés vers votre boîte réelle."],
-  ["contact","SimpleLogin","https://simplelogin.io/","Alias e-mail pour protéger votre adresse principale."],
-  ["contact","Maildrop","https://maildrop.cc/","Boîte e-mail jetable, sans inscription."],
-  ["contact","Globfone","https://globfone.com/send-text/","Envoi de SMS en ligne."],
-  ["contact","SendAText","https://www.sendatext.co/","Envoi de SMS en ligne."],
-  ["contact","FaxZero","https://faxzero.com/","Envoi de fax gratuit en ligne."],
-  ["contact","HS3X","https://hs3x.com/","Numéros SMS temporaires."],
-  ["contact","Free SMS Verification","http://freesmsverification.com/","Numéros temporaires pour recevoir des SMS."],
-  ["contact","SMSToMe","https://smstome.com/","Numéros temporaires pour recevoir des SMS."],
-  ["contact","AWS SNS","https://aws.amazon.com/sns/","Service d'envoi de SMS et de notifications d'Amazon Web Services."],
-  ["contact","Twilio","https://www.twilio.com/","Plateforme API de communications (SMS, appels, vérification)."],
-  ["contact","Threader","https://threader.app/thread/1199785692274077696","Lecteur de threads Twitter / X."],
-  ["contact","Disify","https://disify.com/","Vérifier si une adresse e-mail est jetable."],
-  ["contact","Temp-Mail","https://temp-mail.org/","Adresse e-mail temporaire instantanée."],
-  ["contact","Guerrilla Mail","https://www.guerrillamail.com/","Boîte e-mail temporaire avec envoi possible."],
-  ["contact","Mailinator","https://www.mailinator.com/","Boîte publique jetable pour tests et inscriptions."],
-  ["contact","YOPmail","https://yopmail.com/","Adresse e-mail jetable sans inscription."],
-  ["contact","TextVerified","https://www.textverified.com/","Numéros virtuels pour la vérification par SMS."],
-
-  // ---- Moteurs de recherche ----
-  ["moteurs","Google","https://www.google.com/","Moteur de recherche généraliste."],
-  ["moteurs","Google – Recherche avancée","https://www.google.com/advanced_search","Filtrer par date, langue, domaine, type de fichier."],
-  ["moteurs","Google Hacking Database","https://www.exploit-db.com/google-hacking-database","Base de requêtes avancées (dorks) pour Google."],
-  ["moteurs","Bing","https://www.bing.com/","Moteur de recherche de Microsoft."],
-  ["moteurs","DuckDuckGo","https://duckduckgo.com/","Recherche sans pistage des utilisateurs."],
-  ["moteurs","Brave Search","https://search.brave.com/","Moteur indépendant basé sur son propre index."],
-  ["moteurs","Qwant","https://www.qwant.com/","Moteur de recherche européen respectueux de la vie privée."],
-  ["moteurs","Startpage","https://www.startpage.com/","Résultats Google de manière anonyme."],
-  ["moteurs","Mojeek","https://www.mojeek.com/","Moteur indépendant avec son propre index."],
-  ["moteurs","Marginalia","https://search.marginalia.nu/","Moteur qui met en avant les sites indépendants."],
-  ["moteurs","Yandex","https://yandex.com/","Moteur russe, très utile pour les pays de l'Est."],
-  ["moteurs","Baidu","https://www.baidu.com/","Moteur de recherche chinois."],
-  ["moteurs","SearXNG","https://github.com/searxng/searxng","Métamoteur auto-hébergeable qui agrège plusieurs moteurs."],
-  ["moteurs","Wolfram Alpha","https://www.wolframalpha.com/","Moteur de calcul et de données structurées."],
-
-  // ---- Personnes & identité ----
-  ["personnes","Epieos","https://epieos.com/","Recherche d'informations liées à une adresse e-mail ou un numéro."],
-  ["personnes","Pipl","https://pipl.com/","Moteur de recherche de personnes à partir d'identités."],
-  ["personnes","IDCrawl","https://www.idcrawl.com/","Recherche d'empreinte numérique à partir d'un nom."],
-  ["personnes","Whitepages","https://www.whitepages.com/","Annuaire inversé et recherche de personnes (États-Unis)."],
-  ["personnes","Spokeo","https://www.spokeo.com/","Agrégateur de données publiques sur les personnes."],
-  ["personnes","TruePeopleSearch","https://www.truepeoplesearch.com/","Recherche de personnes à partir de données publiques (US)."],
-  ["personnes","OSINT Industries","https://osint.industries/","Recherche d'identités à partir d'e-mails et de numéros."],
-
-  // ---- Pseudos & comptes ----
-  ["username","Sherlock","https://github.com/sherlock-project/sherlock","Recherche d'un pseudo sur des centaines de réseaux."],
-  ["username","WhatsMyName","https://whatsmyname.app/","Vérifier la présence d'un pseudo sur de nombreux sites."],
-  ["username","Namechk","https://namechk.com/","Disponibilité d'un pseudo sur les réseaux sociaux."],
-  ["username","KnowEm","https://knowem.com/","Recherche de pseudo sur plus de 500 plateformes."],
-  ["username","Maigret","https://github.com/soxoj/maigret","Recherche de comptes par pseudo, avec rapport détaillé."],
-  ["username","Social Analyzer","https://github.com/qeeqbox/social-analyzer","Analyse de profils et de pseudos sur de nombreux sites."],
-  ["username","Blackbird","https://github.com/p1ngul1n0/blackbird","Recherche de comptes à partir d'un pseudo ou d'un e-mail."],
-
-  // ---- E-mail ----
-  ["email","Hunter.io","https://hunter.io/","Trouver et vérifier les e-mails professionnels d'un domaine."],
-  ["email","EmailRep","https://emailrep.io/","Réputation et indices de risque d'une adresse e-mail."],
-  ["email","Skymem","https://www.skymem.info/","Recherche d'e-mails associés à un domaine."],
-  ["email","Phonebook.cz","https://phonebook.cz/","Recherche d'e-mails, domaines et URL indexés."],
-  ["email","Snov.io","https://snov.io/","Recherche et vérification d'e-mails professionnels."],
-  ["email","RocketReach","https://rocketreach.co/","Coordonnées professionnelles à partir d'un nom ou d'une entreprise."],
-  ["email","Lusha","https://www.lusha.com/","Coordonnées professionnelles et enrichissement de contacts."],
-  ["email","Apollo.io","https://www.apollo.io/","Base de contacts B2B et recherche de prospects."],
-  ["email","Holehe","https://github.com/megadose/holehe","Vérifier si un e-mail est lié à des services en ligne."],
-  ["email","GHunt","https://github.com/mxrch/GHunt","Informations sur un compte Google à partir d'un e-mail."],
-  ["email","Email Hippo","https://tools.emailhippo.com/","Vérification de la validité d'une adresse e-mail."],
-  ["email","Verifalia","https://verifalia.com/","Vérification en masse de listes d'adresses e-mail."],
-
-  // ---- Téléphone ----
-  ["telephone","PhoneInfoga","https://github.com/sundowndev/PhoneInfoga","Collecte d'informations sur un numéro de téléphone."],
-  ["telephone","Truecaller","https://www.truecaller.com/","Identification des appels et recherche de numéros."],
-  ["telephone","NumVerify","https://numverify.com/","Validation et informations de transporteur d'un numéro."],
-  ["telephone","NumLookup","https://numlookup.com/","Recherche de numéros et type de ligne."],
-  ["telephone","Sync.me","https://sync.me/","Identification des numéros inconnus."],
-  ["telephone","Hiya","https://www.hiya.com/","Identification des appelants et protection anti-spam."],
-  ["telephone","Infobel","https://www.infobel.com/","Annuaires téléphoniques européens."],
-  ["telephone","118712","https://www.118712.fr/","Annuaire inversé pour les numéros français."],
-  ["telephone","PagesJaunes","https://www.pagesjaunes.fr/","Annuaire professionnel et particulier français."],
-  ["telephone","libphonenumber","https://libphonenumber.appspot.com/","Analyse et formatage de numéros de téléphone."],
-
-  // ---- Réseaux sociaux ----
-  ["reseaux","Social Searcher","https://www.social-searcher.com/","Recherche de publications sur les réseaux sociaux."],
-  ["reseaux","X – Recherche avancée","https://x.com/search-advanced","Filtrer les publications sur X par date, lieu et compte."],
-  ["reseaux","TweetDeck","https://tweetdeck.twitter.com/","Suivi de mots-clés et de comptes sur X en temps réel."],
-  ["reseaux","LinkedIn – Recherche de personnes","https://www.linkedin.com/search/results/people/","Recherche de profils professionnels publics."],
-  ["reseaux","Reddit – Recherche","https://www.reddit.com/search/","Recherche de publications et de commentaires Reddit."],
-  ["reseaux","TGStat","https://tgstat.com/","Statistiques et recherche de canaux Telegram."],
-  ["reseaux","Telemetr","https://telemetr.io/","Analyse de canaux et de groupes Telegram."],
-  ["reseaux","Lyzem","https://lyzem.com/","Moteur de recherche de canaux Telegram."],
-  ["reseaux","Who Posted What","https://whopostedwhat.com/","Recherche de tweets par auteur ou mot-clé."],
-  ["reseaux","Social Blade","https://socialblade.com/","Statistiques d'audience YouTube, Twitch et autres."],
-  ["reseaux","Followerwonk","https://followerwonk.com/","Analyse et comparaison d'audiences Twitter."],
-  ["reseaux","Bluesky","https://bsky.app/","Réseau social décentralisé avec recherche publique."],
-  ["reseaux","Instances.social","https://instances.social/","Répertoire des serveurs Mastodon du Fediverse."],
-  ["reseaux","snscrape","https://github.com/JustAnotherArchivist/snscrape","Collecte de publications de plusieurs réseaux sociaux."],
-  ["reseaux","Twint","https://github.com/twintproject/twint","Scraper de tweets (projet archivé, usage historique)."],
-
-  // ---- Domaines & IP ----
-  ["domaines","crt.sh","https://crt.sh/","Certificats SSL/TLS pour découvrir des sous-domaines."],
-  ["domaines","Shodan","https://www.shodan.io/","Moteur de recherche des appareils connectés à Internet."],
-  ["domaines","Censys","https://search.censys.io/","Recherche d'hôtes, certificats et services exposés."],
-  ["domaines","urlscan.io","https://urlscan.io/","Analyse et capture de sites web."],
-  ["domaines","VirusTotal","https://www.virustotal.com/","Analyse de fichiers, URL, domaines et IP."],
-  ["domaines","SecurityTrails","https://securitytrails.com/","Historique DNS, WHOIS et sous-domaines."],
-  ["domaines","DomainTools Whois","https://whois.domaintools.com/","Recherche WHOIS et historique de domaines."],
-  ["domaines","ViewDNS","https://viewdns.info/","Boîte à outils DNS, WHOIS et IP."],
-  ["domaines","who.is","https://who.is/","Recherche WHOIS et DNS d'un domaine."],
-  ["domaines","DNSdumpster","https://dnsdumpster.com/","Cartographie DNS et sous-domaines d'un domaine."],
-  ["domaines","BGP.he.net","https://bgp.he.net/","Informations sur les AS, préfixes IP et routage BGP."],
-  ["domaines","IPinfo","https://ipinfo.io/","Géolocalisation et informations sur une adresse IP."],
-  ["domaines","AbuseIPDB","https://www.abuseipdb.com/","Signalements d'abus pour une adresse IP."],
-  ["domaines","Robtex","https://www.robtex.com/","Relations entre domaines, IP et réseaux."],
-  ["domaines","ZoomEye","https://www.zoomeye.org/","Moteur de recherche d'appareils et services exposés."],
-  ["domaines","FOFA","https://en.fofa.info/","Recherche d'actifs Internet par requêtes avancées."],
-  ["domaines","Quake 360","https://quake.360.net/","Moteur de recherche d'actifs et de services Internet."],
-  ["domaines","GreyNoise","https://viz.greynoise.io/","Contexte sur les IP qui scannent Internet."],
-  ["domaines","Pentest-Tools","https://pentest-tools.com/","Suite d'outils de reconnaissance et de test."],
-  ["domaines","Security Headers","https://securityheaders.com/","Analyse des en-têtes de sécurité d'un site."],
-  ["domaines","SSL Labs","https://www.ssllabs.com/ssltest/","Test de configuration SSL/TLS d'un serveur."],
-  ["domaines","MXToolbox","https://mxtoolbox.com/","Diagnostic DNS, e-mail et blacklists."],
-  ["domaines","WhatsMyDNS","https://www.whatsmydns.net/","Propagation DNS dans le monde entier."],
-  ["domaines","Netcraft","https://sitereport.netcraft.com/","Rapport technique et réputation d'un site."],
-  ["domaines","BuiltWith","https://builtwith.com/","Technologies utilisées par un site web."],
-  ["domaines","Wappalyzer","https://www.wappalyzer.com/","Identification des technologies d'un site."],
-  ["domaines","Hunter.how","https://hunter.how/","Moteur de recherche d'actifs Internet."],
-  ["domaines","HackerTarget","https://hackertarget.com/","Outils de reconnaissance réseau en ligne."],
-  ["domaines","DNSChecker","https://dnschecker.org/","Vérification des enregistrements DNS."],
-  ["domaines","RIPEstat","https://stat.ripe.net/","Statistiques et données réseau pour une IP ou un AS."],
-  ["domaines","ARIN WHOIS","https://whois.arin.net/","Recherche d'attributions d'adresses IP en Amérique."],
-  ["domaines","Cloudflare Radar","https://radar.cloudflare.com/","Tendances et données sur le trafic Internet mondial."],
-  ["domaines","OWASP Amass","https://github.com/owasp-amass/amass","Cartographie de surface d'attaque et sous-domaines."],
-  ["domaines","Subfinder","https://github.com/projectdiscovery/subfinder","Découverte passive de sous-domaines."],
-  ["domaines","theHarvester","https://github.com/laramies/theHarvester","Collecte d'e-mails, sous-domaines et hôtes."],
-  ["domaines","Recon-ng","https://github.com/lanmaster53/recon-ng","Framework de reconnaissance web modulaire."],
-  ["domaines","SpiderFoot","https://github.com/smicallef/spiderfoot","Automatisation de la collecte OSINT sur une cible."],
-  ["domaines","Nmap","https://nmap.org/","Scanner de ports et de services réseau."],
-
-  // ---- Menaces & Dark web ----
-  ["cyber","Ahmia","https://ahmia.fi/","Moteur de recherche des sites .onion indexés."],
-  ["cyber","Tor Project","https://www.torproject.org/","Navigateur Tor pour accéder au réseau Tor."],
-  ["cyber","Ransomware.live","https://www.ransomware.live/","Suivi des groupes de ransomware et de leurs victimes."],
-  ["cyber","ID Ransomware","https://id-ransomware.malwarehunterteam.com/","Identifier la famille d'un ransomware à partir d'un fichier."],
-  ["cyber","Malpedia","https://malpedia.caad.fkie.fraunhofer.de/","Base de connaissances sur les familles de malware."],
-  ["cyber","MITRE ATT&CK","https://attack.mitre.org/","Référentiel des tactiques et techniques d'attaque."],
-  ["cyber","MalwareBazaar","https://bazaar.abuse.ch/","Partage d'échantillons de malware."],
-  ["cyber","URLhaus","https://urlhaus.abuse.ch/","Base d'URL utilisées pour distribuer des malwares."],
-  ["cyber","ThreatFox","https://threatfox.abuse.ch/","Partage d'indicateurs de compromission (IOC)."],
-  ["cyber","Feodo Tracker","https://feodotracker.abuse.ch/","Suivi des serveurs de botnets."],
-  ["cyber","PhishTank","https://phishtank.org/","Base communautaire de sites de phishing."],
-  ["cyber","URLVoid","https://www.urlvoid.com/","Analyse d'une URL avec plusieurs moteurs de réputation."],
-  ["cyber","Google Safe Browsing","https://transparencyreport.google.com/safe-browsing/search","Vérifier si un site est signalé comme dangereux."],
-  ["cyber","CERT-FR","https://www.cert.ssi.gouv.fr/","Alertes et avis de sécurité de l'ANSSI."],
-  ["cyber","Exploit-DB","https://www.exploit-db.com/","Base publique d'exploits et de vulnérabilités."],
-  ["cyber","CVE Details","https://www.cvedetails.com/","Recherche et statistiques sur les CVE."],
-  ["cyber","NVD (NIST)","https://nvd.nist.gov/","Base nationale américaine des vulnérabilités."],
-  ["cyber","AlienVault OTX","https://otx.alienvault.com/","Plateforme communautaire de renseignement sur les menaces."],
-  ["cyber","Pulsedive","https://pulsedive.com/","Analyse de menaces pour IP, domaines et URL."],
-  ["cyber","ThreatMiner","https://www.threatminer.org/","Recherche de renseignements sur les menaces."],
-  ["cyber","Hybrid Analysis","https://www.hybrid-analysis.com/","Analyse dynamique de fichiers suspects."],
-  ["cyber","ANY.RUN","https://any.run/","Sandbox interactive pour analyser des malwares."],
-  ["cyber","Joe Sandbox","https://www.joesandbox.com/","Analyse automatisée de fichiers et d'URL."],
-  ["cyber","Triage","https://tria.ge/","Sandbox d'analyse de malwares."],
-
-  // ---- Fuites de données ----
-  ["fuites","Have I Been Pwned","https://haveibeenpwned.com/","Vérifier si une adresse e-mail apparaît dans une fuite."],
-  ["fuites","DeHashed","https://www.dehashed.com/","Recherche dans des bases de données fuitées."],
-  ["fuites","Intelligence X","https://intelx.io/","Recherche dans des fuites, dark web et documents."],
-  ["fuites","Breach Directory","https://breachdirectory.org/","Recherche d'identifiants compromis."],
-  ["fuites","LeakCheck","https://leakcheck.io/","Vérification d'e-mails et de noms d'utilisateur dans des fuites."],
-  ["fuites","Hudson Rock","https://www.hudsonrock.com/","Renseignement sur les infostealers et identifiants volés."],
-  ["fuites","Psbdmp","https://psbdmp.ws/","Recherche dans les pastes publiés sur Pastebin."],
-  ["fuites","Ghost Project","https://ghostproject.fr/","Vérifier si des données personnelles ont fuité (France)."],
-  ["fuites","Firefox Monitor","https://monitor.firefox.com/","Surveillance des fuites de données de Mozilla."],
-
-  // ---- Archives web ----
-  ["archives","Wayback Machine","https://web.archive.org/","Anciennes versions de sites web."],
-  ["archives","Archive.today","https://archive.ph/","Archiver et consulter des pages figées."],
-  ["archives","Common Crawl","https://commoncrawl.org/","Grande archive ouverte du web."],
-  ["archives","Memento TimeTravel","https://timetravel.mementoweb.org/","Recherche dans plusieurs archives web à la fois."],
-  ["archives","Trove (Australie)","https://trove.nla.gov.au/","Archives nationales australiennes en ligne."],
-  ["archives","Library of Congress Web Archives","https://www.loc.gov/web-archives/","Archives web de la bibliothèque du Congrès."],
-  ["archives","Perma.cc","https://perma.cc/","Archiver des liens pour les citer durablement."],
-  ["archives","ArchiveBox","https://archivebox.io/","Archiver soi-même ses pages web."],
-  ["archives","Webrecorder","https://webrecorder.net/","Capturer des pages web interactives."],
-  ["archives","Internet Archive Scholar","https://scholar.archive.org/","Articles scientifiques archivés."],
-  ["archives","waybackurls","https://github.com/tomnomnom/waybackurls","Extraire les URL archivées d'un domaine."],
-  ["archives","Waybackpack","https://github.com/jsvine/waybackpack","Télécharger l'historique d'un site depuis la Wayback Machine."],
-  ["archives","Gallica (BnF)","https://gallica.bnf.fr/","Bibliothèque numérique de la BnF (presse, livres, cartes)."],
-  ["archives","RetroNews","https://www.retronews.fr/","Archives de la presse française et internationale."],
-  ["archives","INA","https://www.ina.fr/","Archives audiovisuelles de la radio et de la télévision françaises."],
-
-  // ---- Images & Métadonnées ----
-  ["images","TinEye","https://tineye.com/","Recherche d'images inversée."],
-  ["images","Google Lens","https://lens.google.com/","Recherche visuelle par image."],
-  ["images","Yandex Images","https://yandex.com/images/","Recherche d'images inversée très efficace."],
-  ["images","Bing Visual Search","https://www.bing.com/visualsearch","Recherche visuelle par image de Microsoft."],
-  ["images","FotoForensics","https://fotoforensics.com/","Analyse ELA et métadonnées d'images."],
-  ["images","Jeffrey's Exif Viewer","https://exif.regex.info/exif.cgi","Afficher les métadonnées EXIF d'une image."],
-  ["images","Metadata2Go","https://www.metadata2go.com/","Lire les métadonnées de fichiers images, audio et documents."],
-  ["images","ExifTool","https://exiftool.org/","Lecteur et éditeur de métadonnées (en ligne de commande)."],
-  ["images","Forensically","https://29a.ch/photo-forensics/","Détection de falsifications d'images dans le navigateur."],
-  ["images","Image Raider","https://www.imageraider.com/","Recherche inversée d'images et de leurs sources."],
-  ["images","Stegonline","https://stegonline.georgeom.net/","Analyse de stéganographie dans les images."],
-  ["images","Aperi'Solve","https://aperisolve.fr/","Analyse automatisée de fichiers images pour détecter des données cachées."],
-
-  // ---- Vidéo & Deepfakes ----
-  ["video","YouTube DataViewer","https://citizenevidence.amnestyusa.org/","Métadonnées et miniatures de vidéos YouTube (Amnesty)."],
-  ["video","InVID-WeVerify","https://www.invid-project.eu/","Plugin de vérification de vidéos et d'images."],
-  ["video","Hive Moderation","https://hivemoderation.com/ai-generated-content-detection","Détection de contenus générés par IA."],
-  ["video","Reality Defender","https://www.realitydefender.com/","Détection de deepfakes image, audio et vidéo."],
-  ["video","MediaInfo","https://mediaarea.net/en/MediaInfo","Informations techniques détaillées sur un fichier média."],
-
-  // ---- Documents & Savoir ----
-  ["documents","Metagoofil","https://github.com/laramies/metagoofil","Extraction de métadonnées de documents publics d'un domaine."],
-  ["documents","FOCA","https://github.com/ElevenPaths/FOCA","Analyse de métadonnées de documents Office et PDF."],
-  ["documents","DocumentCloud","https://www.documentcloud.org/","Plateforme d'analyse et de partage de documents (journalisme)."],
-  ["documents","Google Scholar","https://scholar.google.com/","Moteur de recherche d'articles scientifiques."],
-  ["documents","Semantic Scholar","https://www.semanticscholar.org/","Recherche académique assistée par IA."],
-  ["documents","Google Books","https://books.google.com/","Recherche plein texte dans des livres numérisés."],
-  ["documents","HAL","https://hal.science/","Archive ouverte française de publications scientifiques."],
-  ["documents","Persée","https://www.persee.fr/","Revues scientifiques françaises en sciences humaines."],
-  ["documents","BASE","https://www.base-search.net/","Moteur de recherche d'archives ouvertes académiques."],
-  ["documents","Wikidata","https://www.wikidata.org/","Base de données structurée et ouverte."],
-
-  // ---- Géolocalisation ----
-  ["geo","Google Earth","https://earth.google.com/","Globe 3D et imagerie historique."],
-  ["geo","Google Maps","https://maps.google.com/","Cartes, itinéraires et photos de lieux."],
-  ["geo","Google Street View","https://www.google.com/streetview/","Visualisation panoramique des rues."],
-  ["geo","Sentinel Hub EO Browser","https://apps.sentinel-hub.com/eo-browser/","Imagerie satellite Sentinel gratuite."],
-  ["geo","Copernicus Browser","https://browser.dataspace.copernicus.eu/","Imagerie satellite Copernicus de l'Union européenne."],
-  ["geo","Zoom Earth","https://zoom.earth/","Images satellite et météo en temps réel."],
-  ["geo","Wikimapia","https://wikimapia.org/","Carte collaborative annotée de lieux."],
-  ["geo","Bing Maps","https://www.bing.com/maps","Cartes et vues aériennes de Microsoft."],
-  ["geo","Yandex Maps","https://yandex.com/maps/","Cartes et panoramas, très détaillés en Europe de l'Est."],
-  ["geo","Mapillary","https://www.mapillary.com/","Photos de rues collaboratives et géolocalisées."],
-  ["geo","Overpass Turbo","https://overpass-turbo.eu/","Requêtes avancées sur les données OpenStreetMap."],
-  ["geo","SunCalc","https://www.suncalc.org/","Position du soleil pour vérifier l'heure d'une photo."],
-  ["geo","ShadowCalculator","https://shadowcalculator.eu/","Calcul des ombres pour dater ou localiser une image."],
-  ["geo","PeakFinder","https://www.peakfinder.com/","Identifier des sommets et des montagnes à partir d'un point."],
-  ["geo","Géoportail","https://www.geoportail.gouv.fr/","Cartes et photos aériennes officielles (France)."],
-  ["geo","Cadastre","https://cadastre.data.gouv.fr/","Plans cadastraux officiels (France)."],
-  ["geo","Géoportail de l'urbanisme","https://www.geoportail-urbanisme.gouv.fr/","Règles d'urbanisme par commune (France)."],
-  ["geo","OpenStreetMap","https://www.openstreetmap.org/","Carte mondiale libre et collaborative."],
-  ["geo","What3words","https://what3words.com/","Localiser un lieu avec un code de trois mots."],
-  ["geo","Plus Codes","https://plus.codes/","Codes de localisation ouverts et courts."],
-  ["geo","NASA FIRMS","https://firms.modaps.eosdis.nasa.gov/","Détection d'incendies et de points chauds par satellite."],
-  ["geo","NASA Worldview","https://worldview.earthdata.nasa.gov/","Imagerie satellite quotidienne de la Terre."],
-  ["geo","GPS Visualizer","https://www.gpsvisualizer.com/","Tracer et convertir des fichiers GPS."],
-  ["geo","HERE WeGo","https://wego.here.com/","Cartes et itinéraires alternatifs."],
-
-  // ---- Transport & trafic ----
-  ["transport","Flightradar24","https://www.flightradar24.com/","Suivi des vols en temps réel."],
-  ["transport","FlightAware","https://flightaware.com/","Suivi des vols et historique des trajets aériens."],
-  ["transport","ADS-B Exchange","https://globe.adsbexchange.com/","Suivi des avions sans filtrage."],
-  ["transport","Planefinder","https://planefinder.net/","Suivi d'avions en temps réel."],
-  ["transport","OpenSky Network","https://opensky-network.org/","Données ouvertes sur le trafic aérien."],
-  ["transport","MarineTraffic","https://www.marinetraffic.com/","Suivi des navires en temps réel."],
-  ["transport","VesselFinder","https://www.vesselfinder.com/","Suivi des navires et de leurs escales."],
-  ["transport","OpenRailwayMap","https://www.openrailwaymap.org/","Carte ferroviaire mondiale."],
-  ["transport","FAA Registry","https://registry.faa.gov/","Registre des immatriculations d'aéronefs américains."],
-  ["transport","Aviation Safety Network","https://aviation-safety.net/","Base d'accidents et d'incidents aériens."],
-  ["transport","Planespotters","https://www.planespotters.net/","Photos et historique d'avions par immatriculation."],
-  ["transport","Equasis","https://www.equasis.org/","Historique et informations officielles sur les navires."],
-  ["transport","Shipspotting","https://www.shipspotting.com/","Photos et historique de navires."],
-  ["transport","Windy","https://www.windy.com/","Météo, vent et trafic en temps réel."],
-  ["transport","Skyline Webcams","https://www.skylinewebcams.com/","Webcams en direct dans le monde entier."],
-
-  // ---- Entreprises & registres ----
-  ["entreprises","Pappers","https://www.pappers.fr/","Informations sur les entreprises françaises."],
-  ["entreprises","Infogreffe","https://www.infogreffe.fr/","Greffe des entreprises et documents officiels (France)."],
-  ["entreprises","Societe.com","https://www.societe.com/","Dirigeants, bilans et données d'entreprises françaises."],
-  ["entreprises","INPI Data","https://data.inpi.fr/","Marques, brevets et dessins déposés en France."],
-  ["entreprises","Annuaire des entreprises","https://annuaire-entreprises.data.gouv.fr/","Annuaire officiel des entreprises françaises."],
-  ["entreprises","BODACC","https://www.bodacc.fr/","Annonces légales et procédures des entreprises."],
-  ["entreprises","OpenCorporates","https://opencorporates.com/","Plus grande base mondiale d'entreprises."],
-  ["entreprises","OpenSanctions","https://www.opensanctions.org/","Listes de sanctions et personnes politiquement exposées."],
-  ["entreprises","Companies House (UK)","https://find-and-update.company-information.service.gov.uk/","Registre officiel des entreprises britanniques."],
-  ["entreprises","SEC EDGAR","https://www.sec.gov/edgar","Dépôts financiers des entreprises américaines."],
-  ["entreprises","OCCRP Aleph","https://aleph.occrp.org/","Moteur de recherche d'enquêtes et de registres."],
-  ["entreprises","ICIJ Offshore Leaks","https://offshoreleaks.icij.org/","Bases de données des sociétés offshore."],
-  ["entreprises","Registre de transparence UE","https://transparency-register.europa.eu/","Représentants d'intérêts auprès de l'Union européenne."],
-  ["entreprises","HATVP","https://www.hatvp.fr/","Déclarations de patrimoine et d'intérêts (France)."],
-  ["entreprises","Légifrance","https://www.legifrance.gouv.fr/","Textes de loi et jurisprudence officiels (France)."],
-  ["entreprises","BOAMP","https://www.boamp.fr/","Marchés publics français."],
-  ["entreprises","data.gouv.fr","https://www.data.gouv.fr/","Portail des données ouvertes de l'État français."],
-  ["entreprises","Carte des sanctions UE","https://www.sanctionsmap.eu/","Sanctions de l'Union européenne par pays."],
-  ["entreprises","Bundesanzeiger","https://www.bundesanzeiger.de/","Publications légales des entreprises allemandes."],
-  ["entreprises","Handelsregister","https://www.handelsregister.de/","Registre du commerce allemand."],
-  ["entreprises","Crunchbase","https://www.crunchbase.com/","Données sur les startups et les investisseurs."],
-  ["entreprises","ImportYeti","https://www.importyeti.com/","Données d'importation maritime aux États-Unis."],
-  ["entreprises","USAspending","https://www.usaspending.gov/","Dépenses fédérales américaines."],
-  ["entreprises","ProPublica Nonprofit Explorer","https://projects.propublica.org/nonprofits/","Déclarations fiscales des associations américaines."],
-  ["entreprises","OpenSecrets","https://www.opensecrets.org/","Financement de la vie politique américaine."],
-  ["entreprises","FEC","https://www.fec.gov/","Données de financement des campagnes électorales américaines."],
-  ["entreprises","OpenOwnership Register","https://register.openownership.org/","Registre des bénéficiaires effectifs des sociétés."],
-
-  // ---- Crypto & blockchain ----
-  ["crypto","Blockchain.com Explorer","https://www.blockchain.com/explorer","Explorateur de transactions Bitcoin."],
-  ["crypto","Etherscan","https://etherscan.io/","Explorateur de transactions Ethereum."],
-  ["crypto","Blockchair","https://blockchair.com/","Explorateur multi-blockchains."],
-  ["crypto","Mempool","https://mempool.space/","Explorateur Bitcoin et analyse des frais."],
-  ["crypto","BitInfoCharts","https://bitinfocharts.com/","Données et soldes de plusieurs cryptomonnaies."],
-  ["crypto","WalletExplorer","https://www.walletexplorer.com/","Regroupement d'adresses Bitcoin par portefeuille."],
-  ["crypto","Arkham Intelligence","https://intel.arkm.com/","Analyse de portefeuilles et de flux crypto."],
-  ["crypto","Breadcrumbs","https://www.breadcrumbs.app/","Visualisation des transactions entre portefeuilles."],
-  ["crypto","MetaSleuth","https://metasleuth.io/","Traçage de transactions sur plusieurs blockchains."],
-  ["crypto","Tronscan","https://tronscan.org/","Explorateur de la blockchain Tron."],
-  ["crypto","Solscan","https://solscan.io/","Explorateur de la blockchain Solana."],
-  ["crypto","OXT","https://oxt.me/","Analyse avancée des transactions Bitcoin."],
-  ["crypto","Bitcoin Abuse","https://www.bitcoinabuse.com/","Adresses Bitcoin signalées pour fraude."],
-  ["crypto","Dune","https://dune.com/","Requêtes et tableaux de bord sur les données blockchain."],
-  ["crypto","DeFiLlama","https://defillama.com/","Données sur la finance décentralisée (DeFi)."],
-  ["crypto","TokenSniffer","https://tokensniffer.com/","Analyse de risque des tokens et smart contracts."],
-
-  // ---- Actualités & médias ----
-  ["actus","Google News","https://news.google.com/","Agrégateur d'actualités mondiales."],
-  ["actus","Google Trends","https://trends.google.com/","Tendances de recherche par pays et période."],
-  ["actus","GDELT Project","https://www.gdeltproject.org/","Surveillance mondiale des médias en plusieurs langues."],
-  ["actus","Media Cloud","https://mediacloud.org/","Analyse de l'écosystème médiatique."],
-  ["actus","Event Registry","https://eventregistry.org/","Suivi d'événements et d'entités dans l'actualité."],
-  ["actus","Ground News","https://ground.news/","Comparer la couverture d'un même sujet par plusieurs médias."],
-  ["actus","Feedly","https://feedly.com/","Agrégateur de flux RSS pour veille."],
-  ["actus","Google Alerts","https://www.google.com/alerts","Alertes e-mail sur un sujet ou un nom."],
-  ["actus","Europresse","https://nouveau.europresse.com/","Presse française et internationale (accès via bibliothèques)."],
-
-  // ---- Ressources & formation ----
-  ["ressources","OSINT Framework","https://osintframework.com/","Arbre interactif de ressources OSINT."],
-  ["ressources","Bellingcat Toolkit","https://bellingcat.gitbook.io/toolkit","Ressources de vérification et d'enquête open source."],
-  ["ressources","IntelTechniques","https://inteltechniques.com/","Outils et formations OSINT de Michael Bazzell."],
-  ["ressources","Awesome OSINT","https://github.com/jivoi/awesome-osint","Liste curée d'outils et de ressources OSINT."],
-  ["ressources","Sector035","https://sector035.nl/","Blog et ressources OSINT néerlandaises."],
-  ["ressources","CyberChef","https://gchq.github.io/CyberChef/","Décodage, conversion et analyse de données."],
-  ["ressources","Obsidian","https://obsidian.md/","Prise de notes en Markdown pour organiser ses enquêtes."],
-  ["ressources","Gephi","https://gephi.org/","Visualisation et analyse de graphes et de réseaux."],
-  ["ressources","Timeline JS","https://timeline.knightlab.com/","Créer des chronologies interactives."],
-  ["ressources","Tails","https://tails.net/","Système d'exploitation portable orienté vie privée."],
-  ["ressources","Whonix","https://www.whonix.org/","Système d'exploitation pour l'anonymat en ligne."],
-  ["ressources","Kali Linux","https://www.kali.org/","Distribution Linux dédiée aux tests de sécurité."],
-];
-
-const TOOLS = RAW.map(([cat, name, url, desc]) => ({ cat, name, url, desc }));
-
-/* ==========================================================
-   3) MOTEUR (ne pas modifier sauf besoin)
-   ========================================================== */
-let currentCat = 'all';
-
-const $ = sel => document.querySelector(sel);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const getHost = url => { try { return new URL(url).hostname; } catch(e) { return ''; } };
-const catName = id => (CATEGORIES.find(c => c.id === id) || {}).name || '';
-const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-const ICON_ARROW = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>`;
-
-/* ---------- Chips (filtres) ---------- */
-function renderChips(){
-  const items = [
-    { id:'all', name:'Tous', count:TOOLS.length },
-    ...CATEGORIES.map(c => ({ id:c.id, name:c.name, count:TOOLS.filter(t => t.cat === c.id).length }))
+  const CATEGORIES = [
+    { id: 'contact', label: 'Contact Jetable' },
+    { id: 'moteurs', label: 'Moteurs de recherche' },
+    { id: 'personnes', label: 'Personnes & identité' },
+    { id: 'username', label: 'Pseudos & comptes' },
+    { id: 'email', label: 'E-mail' },
+    { id: 'telephone', label: 'Téléphone' },
+    { id: 'reseaux', label: 'Réseaux sociaux' },
+    { id: 'domaines', label: 'Domaines & IP' },
+    { id: 'cyber', label: 'Menaces & Dark web' },
+    { id: 'fuites', label: 'Fuites de données' },
+    { id: 'archives', label: 'Archives web' },
+    { id: 'images', label: 'Images & Métadonnées' },
+    { id: 'video', label: 'Vidéo & Deepfakes' },
+    { id: 'documents', label: 'Documents & Savoir' },
+    { id: 'geo', label: 'Géolocalisation' },
+    { id: 'transport', label: 'Transport & trafic' },
+    { id: 'entreprises', label: 'Entreprises & registres' },
+    { id: 'crypto', label: 'Crypto & blockchain' },
+    { id: 'actus', label: 'Actualités & médias' },
+    { id: 'ressources', label: 'Ressources & formation' }
   ];
-  $('#chips').innerHTML = items.map(i =>
-    `<button class="chip ${i.id === currentCat ? 'active' : ''}" data-cat="${esc(i.id)}" role="tab" aria-selected="${i.id === currentCat}">
-       ${esc(i.name)} <span>${i.count}</span>
-     </button>`
-  ).join('');
-}
 
-/* ---------- Grille d'outils ---------- */
-function renderGrid(){
-  const q = $('#search').value.trim().toLowerCase();
-  const list = TOOLS.filter(t =>
-    (currentCat === 'all' || t.cat === currentCat) &&
-    (!q || (t.name + ' ' + t.desc + ' ' + t.url).toLowerCase().includes(q))
-  );
+  const RAW = [
+["contact","OnlineSIM","https://onlinesim.net/","Numéros virtuels temporaires pour recevoir des SMS de vérification."],
+["contact","DoNotPay – Numéro temporaire","https://donotpay.com/learn/temporary-phone-number/","Générer un numéro de téléphone temporaire."],
+["contact","IntelTechniques VoIP Suite","https://inteltechniques.com/voip.suite.html","Suite d'outils VoIP pour les recherches OSINT."],
+["contact","IntelTechniques Twilio CLI","https://inteltechniques.com/voip.twilio.cli.html","Utiliser Twilio en ligne de commande pour l'analyse VoIP."],
+["contact","10 Minute Mail","https://10minutemail.com/","Adresse e-mail jetable valable 10 minutes."],
+["contact","AnonAddy","https://anonaddy.com/","Alias e-mail anonymes redirigés vers votre boîte réelle."],
+["contact","SimpleLogin","https://simplelogin.io/","Alias e-mail pour protéger votre adresse principale."],
+["contact","Maildrop","https://maildrop.cc/","Boîte e-mail jetable, sans inscription."],
+["contact","Globfone","https://globfone.com/send-text/","Envoi de SMS en ligne."],
+["contact","SendAText","https://www.sendatext.co/","Envoi de SMS en ligne."],
+["contact","FaxZero","https://faxzero.com/","Envoi de fax gratuit en ligne."],
+["contact","HS3X","https://hs3x.com/","Numéros SMS temporaires."],
+["contact","Free SMS Verification","http://freesmsverification.com/","Numéros temporaires pour recevoir des SMS."],
+["contact","SMSToMe","https://smstome.com/","Numéros temporaires pour recevoir des SMS."],
+["contact","AWS SNS","https://aws.amazon.com/sns/","Service d'envoi de SMS et de notifications d'Amazon Web Services."],
+["contact","Twilio","https://www.twilio.com/","Plateforme API de communications (SMS, appels, vérification)."],
+["contact","Threader","https://threader.app/thread/1199785692274077696","Lecteur de threads Twitter / X."],
+["contact","Disify","https://disify.com/","Vérifier si une adresse e-mail est jetable."],
+["contact","Temp-Mail","https://temp-mail.org/","Adresse e-mail temporaire instantanée."],
+["contact","Guerrilla Mail","https://www.guerrillamail.com/","Boîte e-mail temporaire avec envoi possible."],
+["contact","Mailinator","https://www.mailinator.com/","Boîte publique jetable pour tests et inscriptions."],
+["contact","YOPmail","https://yopmail.com/","Adresse e-mail jetable sans inscription."],
+["contact","TextVerified","https://www.textverified.com/","Numéros virtuels pour la vérification par SMS."],
+["moteurs","Google","https://www.google.com/","Moteur de recherche généraliste."],
+["moteurs","Google – Recherche avancée","https://www.google.com/advanced_search","Filtrer par date, langue, domaine, type de fichier."],
+["moteurs","Google Hacking Database","https://www.exploit-db.com/google-hacking-database","Base de requêtes avancées (dorks) pour Google."],
+["moteurs","Bing","https://www.bing.com/","Moteur de recherche de Microsoft."],
+["moteurs","DuckDuckGo","https://duckduckgo.com/","Recherche sans pistage des utilisateurs."],
+["moteurs","Brave Search","https://search.brave.com/","Moteur indépendant basé sur son propre index."],
+["moteurs","Qwant","https://www.qwant.com/","Moteur de recherche européen respectueux de la vie privée."],
+["moteurs","Startpage","https://www.startpage.com/","Résultats Google de manière anonyme."],
+["moteurs","Mojeek","https://www.mojeek.com/","Moteur indépendant avec son propre index."],
+["moteurs","Marginalia","https://search.marginalia.nu/","Moteur qui met en avant les sites indépendants."],
+["moteurs","Yandex","https://yandex.com/","Moteur russe, très utile pour les pays de l'Est."],
+["moteurs","Baidu","https://www.baidu.com/","Moteur de recherche chinois."],
+["moteurs","SearXNG","https://github.com/searxng/searxng","Métamoteur auto-hébergeable qui agrège plusieurs moteurs."],
+["moteurs","Wolfram Alpha","https://www.wolframalpha.com/","Moteur de calcul et de données structurées."],
+["personnes","Epieos","https://epieos.com/","Recherche d'informations liées à une adresse e-mail ou un numéro."],
+["personnes","Pipl","https://pipl.com/","Moteur de recherche de personnes à partir d'identités."],
+["personnes","IDCrawl","https://www.idcrawl.com/","Recherche d'empreinte numérique à partir d'un nom."],
+["personnes","Whitepages","https://www.whitepages.com/","Annuaire inversé et recherche de personnes (États-Unis)."],
+["personnes","Spokeo","https://www.spokeo.com/","Agrégateur de données publiques sur les personnes."],
+["personnes","TruePeopleSearch","https://www.truepeoplesearch.com/","Recherche de personnes à partir de données publiques (US)."],
+["personnes","OSINT Industries","https://osint.industries/","Recherche d'identités à partir d'e-mails et de numéros."],
+["username","Sherlock","https://github.com/sherlock-project/sherlock","Recherche d'un pseudo sur des centaines de réseaux."],
+["username","WhatsMyName","https://whatsmyname.app/","Vérifier la présence d'un pseudo sur de nombreux sites."],
+["username","Namechk","https://namechk.com/","Disponibilité d'un pseudo sur les réseaux sociaux."],
+["username","KnowEm","https://knowem.com/","Recherche de pseudo sur plus de 500 plateformes."],
+["username","Maigret","https://github.com/soxoj/maigret","Recherche de comptes par pseudo, avec rapport détaillé."],
+["username","Social Analyzer","https://github.com/qeeqbox/social-analyzer","Analyse de profils et de pseudos sur de nombreux sites."],
+["username","Blackbird","https://github.com/p1ngul1n0/blackbird","Recherche de comptes à partir d'un pseudo ou d'un e-mail."],
+["email","Hunter.io","https://hunter.io/","Trouver et vérifier les e-mails professionnels d'un domaine."],
+["email","EmailRep","https://emailrep.io/","Réputation et indices de risque d'une adresse e-mail."],
+["email","Skymem","https://www.skymem.info/","Recherche d'e-mails associés à un domaine."],
+["email","Phonebook.cz","https://phonebook.cz/","Recherche d'e-mails, domaines et URL indexés."],
+["email","Snov.io","https://snov.io/","Recherche et vérification d'e-mails professionnels."],
+["email","RocketReach","https://rocketreach.co/","Coordonnées professionnelles à partir d'un nom ou d'une entreprise."],
+["email","Lusha","https://www.lusha.com/","Coordonnées professionnelles et enrichissement de contacts."],
+["email","Apollo.io","https://www.apollo.io/","Base de contacts B2B et recherche de prospects."],
+["email","Holehe","https://github.com/megadose/holehe","Vérifier si un e-mail est lié à des services en ligne."],
+["email","GHunt","https://github.com/mxrch/GHunt","Informations sur un compte Google à partir d'un e-mail."],
+["email","Email Hippo","https://tools.emailhippo.com/","Vérification de la validité d'une adresse e-mail."],
+["email","Verifalia","https://verifalia.com/","Vérification en masse de listes d'adresses e-mail."],
+["telephone","PhoneInfoga","https://github.com/sundowndev/PhoneInfoga","Collecte d'informations sur un numéro de téléphone."],
+["telephone","Truecaller","https://www.truecaller.com/","Identification des appels et recherche de numéros."],
+["telephone","NumVerify","https://numverify.com/","Validation et informations de transporteur d'un numéro."],
+["telephone","NumLookup","https://numlookup.com/","Recherche de numéros et type de ligne."],
+["telephone","Sync.me","https://sync.me/","Identification des numéros inconnus."],
+["telephone","Hiya","https://www.hiya.com/","Identification des appelants et protection anti-spam."],
+["telephone","Infobel","https://www.infobel.com/","Annuaires téléphoniques européens."],
+["telephone","118712","https://www.118712.fr/","Annuaire inversé pour les numéros français."],
+["telephone","PagesJaunes","https://www.pagesjaunes.fr/","Annuaire professionnel et particulier français."],
+["telephone","libphonenumber","https://libphonenumber.appspot.com/","Analyse et formatage de numéros de téléphone."],
+["reseaux","Social Searcher","https://www.social-searcher.com/","Recherche de publications sur les réseaux sociaux."],
+["reseaux","X – Recherche avancée","https://x.com/search-advanced","Filtrer les publications sur X par date, lieu et compte."],
+["reseaux","TweetDeck","https://tweetdeck.twitter.com/","Suivi de mots-clés et de comptes sur X en temps réel."],
+["reseaux","LinkedIn – Recherche de personnes","https://www.linkedin.com/search/results/people/","Recherche de profils professionnels publics."],
+["reseaux","Reddit – Recherche","https://www.reddit.com/search/","Recherche de publications et de commentaires Reddit."],
+["reseaux","TGStat","https://tgstat.com/","Statistiques et recherche de canaux Telegram."],
+["reseaux","Telemetr","https://telemetr.io/","Analyse de canaux et de groupes Telegram."],
+["reseaux","Lyzem","https://lyzem.com/","Moteur de recherche de canaux Telegram."],
+["reseaux","Who Posted What","https://whopostedwhat.com/","Recherche de tweets par auteur ou mot-clé."],
+["reseaux","Social Blade","https://socialblade.com/","Statistiques d'audience YouTube, Twitch et autres."],
+["reseaux","Followerwonk","https://followerwonk.com/","Analyse et comparaison d'audiences Twitter."],
+["reseaux","Bluesky","https://bsky.app/","Réseau social décentralisé avec recherche publique."],
+["reseaux","Instances.social","https://instances.social/","Répertoire des serveurs Mastodon du Fediverse."],
+["reseaux","snscrape","https://github.com/JustAnotherArchivist/snscrape","Collecte de publications de plusieurs réseaux sociaux."],
+["reseaux","Twint","https://github.com/twintproject/twint","Scraper de tweets (projet archivé, usage historique)."],
+["domaines","crt.sh","https://crt.sh/","Certificats SSL/TLS pour découvrir des sous-domaines."],
+["domaines","Shodan","https://www.shodan.io/","Moteur de recherche des appareils connectés à Internet."],
+["domaines","Censys","https://search.censys.io/","Recherche d'hôtes, certificats et services exposés."],
+["domaines","urlscan.io","https://urlscan.io/","Analyse et capture de sites web."],
+["domaines","VirusTotal","https://www.virustotal.com/","Analyse de fichiers, URL, domaines et IP."],
+["domaines","SecurityTrails","https://securitytrails.com/","Historique DNS, WHOIS et sous-domaines."],
+["domaines","DomainTools Whois","https://whois.domaintools.com/","Recherche WHOIS et historique de domaines."],
+["domaines","ViewDNS","https://viewdns.info/","Boîte à outils DNS, WHOIS et IP."],
+["domaines","who.is","https://who.is/","Recherche WHOIS et DNS d'un domaine."],
+["domaines","DNSdumpster","https://dnsdumpster.com/","Cartographie DNS et sous-domaines d'un domaine."],
+["domaines","BGP.he.net","https://bgp.he.net/","Informations sur les AS, préfixes IP et routage BGP."],
+["domaines","IPinfo","https://ipinfo.io/","Géolocalisation et informations sur une adresse IP."],
+["domaines","AbuseIPDB","https://www.abuseipdb.com/","Signalements d'abus pour une adresse IP."],
+["domaines","Robtex","https://www.robtex.com/","Relations entre domaines, IP et réseaux."],
+["domaines","ZoomEye","https://www.zoomeye.org/","Moteur de recherche d'appareils et services exposés."],
+["domaines","FOFA","https://en.fofa.info/","Recherche d'actifs Internet par requêtes avancées."],
+["domaines","Quake 360","https://quake.360.net/","Moteur de recherche d'actifs et de services Internet."],
+["domaines","GreyNoise","https://viz.greynoise.io/","Contexte sur les IP qui scannent Internet."],
+["domaines","Pentest-Tools","https://pentest-tools.com/","Suite d'outils de reconnaissance et de test."],
+["domaines","Security Headers","https://securityheaders.com/","Analyse des en-têtes de sécurité d'un site."],
+["domaines","SSL Labs","https://www.ssllabs.com/ssltest/","Test de configuration SSL/TLS d'un serveur."],
+["domaines","MXToolbox","https://mxtoolbox.com/","Diagnostic DNS, e-mail et blacklists."],
+["domaines","WhatsMyDNS","https://www.whatsmydns.net/","Propagation DNS dans le monde entier."],
+["domaines","Netcraft","https://sitereport.netcraft.com/","Rapport technique et réputation d'un site."],
+["domaines","BuiltWith","https://builtwith.com/","Technologies utilisées par un site web."],
+["domaines","Wappalyzer","https://www.wappalyzer.com/","Identification des technologies d'un site."],
+["domaines","Hunter.how","https://hunter.how/","Moteur de recherche d'actifs Internet."],
+["domaines","HackerTarget","https://hackertarget.com/","Outils de reconnaissance réseau en ligne."],
+["domaines","DNSChecker","https://dnschecker.org/","Vérification des enregistrements DNS."],
+["domaines","RIPEstat","https://stat.ripe.net/","Statistiques et données réseau pour une IP ou un AS."],
+["domaines","ARIN WHOIS","https://whois.arin.net/","Recherche d'attributions d'adresses IP en Amérique."],
+["domaines","Cloudflare Radar","https://radar.cloudflare.com/","Tendances et données sur le trafic Internet mondial."],
+["domaines","OWASP Amass","https://github.com/owasp-amass/amass","Cartographie de surface d'attaque et sous-domaines."],
+["domaines","Subfinder","https://github.com/projectdiscovery/subfinder","Découverte passive de sous-domaines."],
+["domaines","theHarvester","https://github.com/laramies/theHarvester","Collecte d'e-mails, sous-domaines et hôtes."],
+["domaines","Recon-ng","https://github.com/lanmaster53/recon-ng","Framework de reconnaissance web modulaire."],
+["domaines","SpiderFoot","https://github.com/smicallef/spiderfoot","Automatisation de la collecte OSINT sur une cible."],
+["domaines","Nmap","https://nmap.org/","Scanner de ports et de services réseau."],
+["cyber","Ahmia","https://ahmia.fi/","Moteur de recherche des sites .onion indexés."],
+["cyber","Tor Project","https://www.torproject.org/","Navigateur Tor pour accéder au réseau Tor."],
+["cyber","Ransomware.live","https://www.ransomware.live/","Suivi des groupes de ransomware et de leurs victimes."],
+["cyber","ID Ransomware","https://id-ransomware.malwarehunterteam.com/","Identifier la famille d'un ransomware à partir d'un fichier."],
+["cyber","Malpedia","https://malpedia.caad.fkie.fraunhofer.de/","Base de connaissances sur les familles de malware."],
+["cyber","MITRE ATT&CK","https://attack.mitre.org/","Référentiel des tactiques et techniques d'attaque."],
+["cyber","MalwareBazaar","https://bazaar.abuse.ch/","Partage d'échantillons de malware."],
+["cyber","URLhaus","https://urlhaus.abuse.ch/","Base d'URL utilisées pour distribuer des malwares."],
+["cyber","ThreatFox","https://threatfox.abuse.ch/","Partage d'indicateurs de compromission (IOC)."],
+["cyber","Feodo Tracker","https://feodotracker.abuse.ch/","Suivi des serveurs de botnets."],
+["cyber","PhishTank","https://phishtank.org/","Base communautaire de sites de phishing."],
+["cyber","URLVoid","https://www.urlvoid.com/","Analyse d'une URL avec plusieurs moteurs de réputation."],
+["cyber","Google Safe Browsing","https://transparencyreport.google.com/safe-browsing/search","Vérifier si un site est signalé comme dangereux."],
+["cyber","CERT-FR","https://www.cert.ssi.gouv.fr/","Alertes et avis de sécurité de l'ANSSI."],
+["cyber","Exploit-DB","https://www.exploit-db.com/","Base publique d'exploits et de vulnérabilités."],
+["cyber","CVE Details","https://www.cvedetails.com/","Recherche et statistiques sur les CVE."],
+["cyber","NVD (NIST)","https://nvd.nist.gov/","Base nationale américaine des vulnérabilités."],
+["cyber","AlienVault OTX","https://otx.alienvault.com/","Plateforme communautaire de renseignement sur les menaces."],
+["cyber","Pulsedive","https://pulsedive.com/","Analyse de menaces pour IP, domaines et URL."],
+["cyber","ThreatMiner","https://www.threatminer.org/","Recherche de renseignements sur les menaces."],
+["cyber","Hybrid Analysis","https://www.hybrid-analysis.com/","Analyse dynamique de fichiers suspects."],
+["cyber","ANY.RUN","https://any.run/","Sandbox interactive pour analyser des malwares."],
+["cyber","Joe Sandbox","https://www.joesandbox.com/","Analyse automatisée de fichiers et d'URL."],
+["cyber","Triage","https://tria.ge/","Sandbox d'analyse de malwares."],
+["fuites","Have I Been Pwned","https://haveibeenpwned.com/","Vérifier si une adresse e-mail apparaît dans une fuite."],
+["fuites","DeHashed","https://www.dehashed.com/","Recherche dans des bases de données fuitées."],
+["fuites","Intelligence X","https://intelx.io/","Recherche dans des fuites, dark web et documents."],
+["fuites","Breach Directory","https://breachdirectory.org/","Recherche d'identifiants compromis."],
+["fuites","LeakCheck","https://leakcheck.io/","Vérification d'e-mails et de noms d'utilisateur dans des fuites."],
+["fuites","Hudson Rock","https://www.hudsonrock.com/","Renseignement sur les infostealers et identifiants volés."],
+["fuites","Psbdmp","https://psbdmp.ws/","Recherche dans les pastes publiés sur Pastebin."],
+["fuites","Ghost Project","https://ghostproject.fr/","Vérifier si des données personnelles ont fuité (France)."],
+["fuites","Firefox Monitor","https://monitor.firefox.com/","Surveillance des fuites de données de Mozilla."],
+["archives","Wayback Machine","https://web.archive.org/","Anciennes versions de sites web."],
+["archives","Archive.today","https://archive.ph/","Archiver et consulter des pages figées."],
+["archives","Common Crawl","https://commoncrawl.org/","Grande archive ouverte du web."],
+["archives","Memento TimeTravel","https://timetravel.mementoweb.org/","Recherche dans plusieurs archives web à la fois."],
+["archives","Trove (Australie)","https://trove.nla.gov.au/","Archives nationales australiennes en ligne."],
+["archives","Library of Congress Web Archives","https://www.loc.gov/web-archives/","Archives web de la bibliothèque du Congrès."],
+["archives","Perma.cc","https://perma.cc/","Archiver des liens pour les citer durablement."],
+["archives","ArchiveBox","https://archivebox.io/","Archiver soi-même ses pages web."],
+["archives","Webrecorder","https://webrecorder.net/","Capturer des pages web interactives."],
+["archives","Internet Archive Scholar","https://scholar.archive.org/","Articles scientifiques archivés."],
+["archives","waybackurls","https://github.com/tomnomnom/waybackurls","Extraire les URL archivées d'un domaine."],
+["archives","Waybackpack","https://github.com/jsvine/waybackpack","Télécharger l'historique d'un site depuis la Wayback Machine."],
+["archives","Gallica (BnF)","https://gallica.bnf.fr/","Bibliothèque numérique de la BnF (presse, livres, cartes)."],
+["archives","RetroNews","https://www.retronews.fr/","Archives de la presse française et internationale."],
+["archives","INA","https://www.ina.fr/","Archives audiovisuelles de la radio et de la télévision françaises."],
+["images","TinEye","https://tineye.com/","Recherche d'images inversée."],
+["images","Google Lens","https://lens.google.com/","Recherche visuelle par image."],
+["images","Yandex Images","https://yandex.com/images/","Recherche d'images inversée très efficace."],
+["images","Bing Visual Search","https://www.bing.com/visualsearch","Recherche visuelle par image de Microsoft."],
+["images","FotoForensics","https://fotoforensics.com/","Analyse ELA et métadonnées d'images."],
+["images","Jeffrey's Exif Viewer","https://exif.regex.info/exif.cgi","Afficher les métadonnées EXIF d'une image."],
+["images","Metadata2Go","https://www.metadata2go.com/","Lire les métadonnées de fichiers images, audio et documents."],
+["images","ExifTool","https://exiftool.org/","Lecteur et éditeur de métadonnées (en ligne de commande)."],
+["images","Forensically","https://29a.ch/photo-forensics/","Détection de falsifications d'images dans le navigateur."],
+["images","Image Raider","https://www.imageraider.com/","Recherche inversée d'images et de leurs sources."],
+["images","Stegonline","https://stegonline.georgeom.net/","Analyse de stéganographie dans les images."],
+["images","Aperi'Solve","https://aperisolve.fr/","Analyse automatisée de fichiers images pour détecter des données cachées."],
+["video","YouTube DataViewer","https://citizenevidence.amnestyusa.org/","Métadonnées et miniatures de vidéos YouTube (Amnesty)."],
+["video","InVID-WeVerify","https://www.invid-project.eu/","Plugin de vérification de vidéos et d'images."],
+["video","Hive Moderation","https://hivemoderation.com/ai-generated-content-detection","Détection de contenus générés par IA."],
+["video","Reality Defender","https://www.realitydefender.com/","Détection de deepfakes image, audio et vidéo."],
+["video","MediaInfo","https://mediaarea.net/en/MediaInfo","Informations techniques détaillées sur un fichier média."],
+["documents","Metagoofil","https://github.com/laramies/metagoofil","Extraction de métadonnées de documents publics d'un domaine."],
+["documents","FOCA","https://github.com/ElevenPaths/FOCA","Analyse de métadonnées de documents Office et PDF."],
+["documents","DocumentCloud","https://www.documentcloud.org/","Plateforme d'analyse et de partage de documents (journalisme)."],
+["documents","Google Scholar","https://scholar.google.com/","Moteur de recherche d'articles scientifiques."],
+["documents","Semantic Scholar","https://www.semanticscholar.org/","Recherche académique assistée par IA."],
+["documents","Google Books","https://books.google.com/","Recherche plein texte dans des livres numérisés."],
+["documents","HAL","https://hal.science/","Archive ouverte française de publications scientifiques."],
+["documents","Persée","https://www.persee.fr/","Revues scientifiques françaises en sciences humaines."],
+["documents","BASE","https://www.base-search.net/","Moteur de recherche d'archives ouvertes académiques."],
+["documents","Wikidata","https://www.wikidata.org/","Base de données structurée et ouverte."],
+["geo","Google Earth","https://earth.google.com/","Globe 3D et imagerie historique."],
+["geo","Google Maps","https://maps.google.com/","Cartes, itinéraires et photos de lieux."],
+["geo","Google Street View","https://www.google.com/streetview/","Visualisation panoramique des rues."],
+["geo","Sentinel Hub EO Browser","https://apps.sentinel-hub.com/eo-browser/","Imagerie satellite Sentinel gratuite."],
+["geo","Copernicus Browser","https://browser.dataspace.copernicus.eu/","Imagerie satellite Copernicus de l'Union européenne."],
+["geo","Zoom Earth","https://zoom.earth/","Images satellite et météo en temps réel."],
+["geo","Wikimapia","https://wikimapia.org/","Carte collaborative annotée de lieux."],
+["geo","Bing Maps","https://www.bing.com/maps","Cartes et vues aériennes de Microsoft."],
+["geo","Yandex Maps","https://yandex.com/maps/","Cartes et panoramas, très détaillés en Europe de l'Est."],
+["geo","Mapillary","https://www.mapillary.com/","Photos de rues collaboratives et géolocalisées."],
+["geo","Overpass Turbo","https://overpass-turbo.eu/","Requêtes avancées sur les données OpenStreetMap."],
+["geo","SunCalc","https://www.suncalc.org/","Position du soleil pour vérifier l'heure d'une photo."],
+["geo","ShadowCalculator","https://shadowcalculator.eu/","Calcul des ombres pour dater ou localiser une image."],
+["geo","PeakFinder","https://www.peakfinder.com/","Identifier des sommets et des montagnes à partir d'un point."],
+["geo","Géoportail","https://www.geoportail.gouv.fr/","Cartes et photos aériennes officielles (France)."],
+["geo","Cadastre","https://cadastre.data.gouv.fr/","Plans cadastraux officiels (France)."],
+["geo","Géoportail de l'urbanisme","https://www.geoportail-urbanisme.gouv.fr/","Règles d'urbanisme par commune (France)."],
+["geo","OpenStreetMap","https://www.openstreetmap.org/","Carte mondiale libre et collaborative."],
+["geo","What3words","https://what3words.com/","Localiser un lieu avec un code de trois mots."],
+["geo","Plus Codes","https://plus.codes/","Codes de localisation ouverts et courts."],
+["geo","NASA FIRMS","https://firms.modaps.eosdis.nasa.gov/","Détection d'incendies et de points chauds par satellite."],
+["geo","NASA Worldview","https://worldview.earthdata.nasa.gov/","Imagerie satellite quotidienne de la Terre."],
+["geo","GPS Visualizer","https://www.gpsvisualizer.com/","Tracer et convertir des fichiers GPS."],
+["geo","HERE WeGo","https://wego.here.com/","Cartes et itinéraires alternatifs."],
+["transport","Flightradar24","https://www.flightradar24.com/","Suivi des vols en temps réel."],
+["transport","FlightAware","https://flightaware.com/","Suivi des vols et historique des trajets aériens."],
+["transport","ADS-B Exchange","https://globe.adsbexchange.com/","Suivi des avions sans filtrage."],
+["transport","Planefinder","https://planefinder.net/","Suivi d'avions en temps réel."],
+["transport","OpenSky Network","https://opensky-network.org/","Données ouvertes sur le trafic aérien."],
+["transport","MarineTraffic","https://www.marinetraffic.com/","Suivi des navires en temps réel."],
+["transport","VesselFinder","https://www.vesselfinder.com/","Suivi des navires et de leurs escales."],
+["transport","OpenRailwayMap","https://www.openrailwaymap.org/","Carte ferroviaire mondiale."],
+["transport","FAA Registry","https://registry.faa.gov/","Registre des immatriculations d'aéronefs américains."],
+["transport","Aviation Safety Network","https://aviation-safety.net/","Base d'accidents et d'incidents aériens."],
+["transport","Planespotters","https://www.planespotters.net/","Photos et historique d'avions par immatriculation."],
+["transport","Equasis","https://www.equasis.org/","Historique et informations officielles sur les navires."],
+["transport","Shipspotting","https://www.shipspotting.com/","Photos et historique de navires."],
+["transport","Windy","https://www.windy.com/","Météo, vent et trafic en temps réel."],
+["transport","Skyline Webcams","https://www.skylinewebcams.com/","Webcams en direct dans le monde entier."],
+["entreprises","Pappers","https://www.pappers.fr/","Informations sur les entreprises françaises."],
+["entreprises","Infogreffe","https://www.infogreffe.fr/","Greffe des entreprises et documents officiels (France)."],
+["entreprises","Societe.com","https://www.societe.com/","Dirigeants, bilans et données d'entreprises françaises."],
+["entreprises","INPI Data","https://data.inpi.fr/","Marques, brevets et dessins déposés en France."],
+["entreprises","Annuaire des entreprises","https://annuaire-entreprises.data.gouv.fr/","Annuaire officiel des entreprises françaises."],
+["entreprises","BODACC","https://www.bodacc.fr/","Annonces légales et procédures des entreprises."],
+["entreprises","OpenCorporates","https://opencorporates.com/","Plus grande base mondiale d'entreprises."],
+["entreprises","OpenSanctions","https://www.opensanctions.org/","Listes de sanctions et personnes politiquement exposées."],
+["entreprises","Companies House (UK)","https://find-and-update.company-information.service.gov.uk/","Registre officiel des entreprises britanniques."],
+["entreprises","SEC EDGAR","https://www.sec.gov/edgar","Dépôts financiers des entreprises américaines."],
+["entreprises","OCCRP Aleph","https://aleph.occrp.org/","Moteur de recherche d'enquêtes et de registres."],
+["entreprises","ICIJ Offshore Leaks","https://offshoreleaks.icij.org/","Bases de données des sociétés offshore."],
+["entreprises","Registre de transparence UE","https://transparency-register.europa.eu/","Représentants d'intérêts auprès de l'Union européenne."],
+["entreprises","HATVP","https://www.hatvp.fr/","Déclarations de patrimoine et d'intérêts (France)."],
+["entreprises","Légifrance","https://www.legifrance.gouv.fr/","Textes de loi et jurisprudence officiels (France)."],
+["entreprises","BOAMP","https://www.boamp.fr/","Marchés publics français."],
+["entreprises","data.gouv.fr","https://www.data.gouv.fr/","Portail des données ouvertes de l'État français."],
+["entreprises","Carte des sanctions UE","https://www.sanctionsmap.eu/","Sanctions de l'Union européenne par pays."],
+["entreprises","Bundesanzeiger","https://www.bundesanzeiger.de/","Publications légales des entreprises allemandes."],
+["entreprises","Handelsregister","https://www.handelsregister.de/","Registre du commerce allemand."],
+["entreprises","Crunchbase","https://www.crunchbase.com/","Données sur les startups et les investisseurs."],
+["entreprises","ImportYeti","https://www.importyeti.com/","Données d'importation maritime aux États-Unis."],
+["entreprises","USAspending","https://www.usaspending.gov/","Dépenses fédérales américaines."],
+["entreprises","ProPublica Nonprofit Explorer","https://projects.propublica.org/nonprofits/","Déclarations fiscales des associations américaines."],
+["entreprises","OpenSecrets","https://www.opensecrets.org/","Financement de la vie politique américaine."],
+["entreprises","FEC","https://www.fec.gov/","Données de financement des campagnes électorales américaines."],
+["entreprises","OpenOwnership Register","https://register.openownership.org/","Registre des bénéficiaires effectifs des sociétés."],
+["crypto","Blockchain.com Explorer","https://www.blockchain.com/explorer","Explorateur de transactions Bitcoin."],
+["crypto","Etherscan","https://etherscan.io/","Explorateur de transactions Ethereum."],
+["crypto","Blockchair","https://blockchair.com/","Explorateur multi-blockchains."],
+["crypto","Mempool","https://mempool.space/","Explorateur Bitcoin et analyse des frais."],
+["crypto","BitInfoCharts","https://bitinfocharts.com/","Données et soldes de plusieurs cryptomonnaies."],
+["crypto","WalletExplorer","https://www.walletexplorer.com/","Regroupement d'adresses Bitcoin par portefeuille."],
+["crypto","Arkham Intelligence","https://intel.arkm.com/","Analyse de portefeuilles et de flux crypto."],
+["crypto","Breadcrumbs","https://www.breadcrumbs.app/","Visualisation des transactions entre portefeuilles."],
+["crypto","MetaSleuth","https://metasleuth.io/","Traçage de transactions sur plusieurs blockchains."],
+["crypto","Tronscan","https://tronscan.org/","Explorateur de la blockchain Tron."],
+["crypto","Solscan","https://solscan.io/","Explorateur de la blockchain Solana."],
+["crypto","OXT","https://oxt.me/","Analyse avancée des transactions Bitcoin."],
+["crypto","Bitcoin Abuse","https://www.bitcoinabuse.com/","Adresses Bitcoin signalées pour fraude."],
+["crypto","Dune","https://dune.com/","Requêtes et tableaux de bord sur les données blockchain."],
+["crypto","DeFiLlama","https://defillama.com/","Données sur la finance décentralisée (DeFi)."],
+["crypto","TokenSniffer","https://tokensniffer.com/","Analyse de risque des tokens et smart contracts."],
+["actus","Google News","https://news.google.com/","Agrégateur d'actualités mondiales."],
+["actus","Google Trends","https://trends.google.com/","Tendances de recherche par pays et période."],
+["actus","GDELT Project","https://www.gdeltproject.org/","Surveillance mondiale des médias en plusieurs langues."],
+["actus","Media Cloud","https://mediacloud.org/","Analyse de l'écosystème médiatique."],
+["actus","Event Registry","https://eventregistry.org/","Suivi d'événements et d'entités dans l'actualité."],
+["actus","Ground News","https://ground.news/","Comparer la couverture d'un même sujet par plusieurs médias."],
+["actus","Feedly","https://feedly.com/","Agrégateur de flux RSS pour veille."],
+["actus","Google Alerts","https://www.google.com/alerts","Alertes e-mail sur un sujet ou un nom."],
+["actus","Europresse","https://nouveau.europresse.com/","Presse française et internationale (accès via bibliothèques)."],
+["ressources","OSINT Framework","https://osintframework.com/","Arbre interactif de ressources OSINT."],
+["ressources","Bellingcat Toolkit","https://bellingcat.gitbook.io/toolkit","Ressources de vérification et d'enquête open source."],
+["ressources","IntelTechniques","https://inteltechniques.com/","Outils et formations OSINT de Michael Bazzell."],
+["ressources","Awesome OSINT","https://github.com/jivoi/awesome-osint","Liste curée d'outils et de ressources OSINT."],
+["ressources","Sector035","https://sector035.nl/","Blog et ressources OSINT néerlandaises."],
+["ressources","CyberChef","https://gchq.github.io/CyberChef/","Décodage, conversion et analyse de données."],
+["ressources","Obsidian","https://obsidian.md/","Prise de notes en Markdown pour organiser ses enquêtes."],
+["ressources","Gephi","https://gephi.org/","Visualisation et analyse de graphes et de réseaux."],
+["ressources","Timeline JS","https://timeline.knightlab.com/","Créer des chronologies interactives."],
+["ressources","Tails","https://tails.net/","Système d'exploitation portable orienté vie privée."],
+["ressources","Whonix","https://www.whonix.org/","Système d'exploitation pour l'anonymat en ligne."],
+["ressources","Kali Linux","https://www.kali.org/","Distribution Linux dédiée aux tests de sécurité."]
+  ];
 
-  const cat = CATEGORIES.find(c => c.id === currentCat);
-  $('#title').textContent = cat ? cat.name : 'Tous les outils';
-  $('#count').textContent = `${String(list.length).padStart(2, '0')} outil(s) affiché(s)`;
+  const TOOLS = RAW.map(function (r) { return { cat: r[0], name: r[1], url: r[2], desc: r[3] }; });
+  const LABEL = {};
+  CATEGORIES.forEach(function (c) { LABEL[c.id] = c.label; });
 
-  $('#grid').innerHTML = list.length ? list.map((t, i) => {
-    const host = getHost(t.url);
-    return `
-      <a class="card" style="--i:${i}" href="${esc(t.url)}" target="_blank" rel="noopener noreferrer">
-        <div class="card-top">
-          <div class="card-icon">
-            <img src="https://www.google.com/s2/favicons?domain=${esc(host)}&sz=64" alt="" loading="lazy"
-                 onerror="this.style.display='none'">
-          </div>
-          <span class="card-arrow">${ICON_ARROW}</span>
-        </div>
-        <h3>${esc(t.name)}</h3>
-        <p>${esc(t.desc || '')}</p>
-        <div class="card-foot">
-          <span>${esc(catName(t.cat))}</span>
-          <span>${esc(host)}</span>
-        </div>
-      </a>`;
-  }).join('') : `<div class="empty">Aucun outil ne correspond à votre recherche.</div>`;
-}
+  const SEARCHERS = [
+    'https://vortex-searcher.vercel.app',
+    'https://lynx-search.vercel.app',
+    'https://brixhub.ru',
+    'https://xsearcher.eu',
+    'https://multisearch.st',
+    'https://lookupdb.org',
+    'https://see-know.ru',
+    'https://better-searcher.com'
+  ];
 
-function render(){
+  const $ = function (s) { return document.querySelector(s); };
+  const html = document.documentElement;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+    });
+  }
+  function hostOf(url) { try { return new URL(url).hostname; } catch (e) { return ''; } }
+  function favicon(url) { return 'https://www.google.com/s2/favicons?domain=' + hostOf(url) + '&sz=64'; }
+
+  /* ---------- Thème ---------- */
+  let prevTheme = html.getAttribute('data-theme') || 'light';
+  const themeBtn = $('#themeToggle');
+  themeBtn.addEventListener('click', function () {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    prevTheme = next;
+    try { localStorage.setItem('untilted-theme', next); } catch (e) {}
+  });
+
+  /* ---------- Compteurs ---------- */
+  document.querySelectorAll('[data-count]').forEach(function (el) {
+    const target = el.dataset.count === 'tools' ? TOOLS.length : CATEGORIES.length;
+    if (reduce) { el.textContent = target; return; }
+    const t0 = performance.now();
+    const dur = 900;
+    requestAnimationFrame(function step(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    });
+  });
+
+  /* ---------- Bandeau ---------- */
+  const names = CATEGORIES.map(function (c) { return '<span>' + esc(c.label) + '</span>'; }).join('');
+  $('#marqueeTrack').innerHTML = names + names;
+
+  /* ---------- Outils ---------- */
+  let currentCat = 'all';
+  let query = '';
+  const search = $('#search');
+  const toolsToggle = $('#toolsToggle');
+  const toolsWrap = $('#toolsWrap');
+
+  function isOpen() { return toolsWrap.classList.contains('open'); }
+  function setOpen(open) {
+    toolsWrap.classList.toggle('open', open);
+    toolsWrap.inert = !open;
+    toolsToggle.setAttribute('aria-expanded', String(open));
+    toolsToggle.querySelector('span').textContent = open ? 'Masquer les outils' : 'Afficher tous les outils';
+  }
+  toolsToggle.addEventListener('click', function () { setOpen(!isOpen()); });
+
+  function renderChips() {
+    const counts = {};
+    TOOLS.forEach(function (t) { counts[t.cat] = (counts[t.cat] || 0) + 1; });
+    let out = '<button type="button" class="chip" data-cat="all">Tous<span class="n">' + TOOLS.length + '</span></button>';
+    CATEGORIES.forEach(function (c) {
+      out += '<button type="button" class="chip" data-cat="' + c.id + '">' + esc(c.label) +
+        '<span class="n">' + (counts[c.id] || 0) + '</span></button>';
+    });
+    $('#chips').innerHTML = out;
+    setActiveChip();
+  }
+  function setActiveChip() {
+    document.querySelectorAll('.chip').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.cat === currentCat);
+    });
+  }
+  $('#chips').addEventListener('click', function (e) {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    currentCat = b.dataset.cat;
+    setActiveChip();
+    if (!isOpen()) setOpen(true);
+    renderGrid();
+  });
+
+  function filtered() {
+    return TOOLS.filter(function (t) {
+      if (currentCat !== 'all' && t.cat !== currentCat) return false;
+      if (!query) return true;
+      return (t.name + ' ' + t.desc + ' ' + LABEL[t.cat] + ' ' + t.url).toLowerCase().indexOf(query) !== -1;
+    });
+  }
+  function renderGrid() {
+    const list = filtered();
+    $('#count').textContent = list.length + ' outil' + (list.length > 1 ? 's' : '');
+    $('#title').textContent = currentCat === 'all' ? 'Tous les outils' : LABEL[currentCat];
+    $('#grid').innerHTML = list.length
+      ? list.map(function (t) {
+          return '<a class="tool" href="' + esc(t.url) + '" target="_blank" rel="noopener noreferrer">' +
+            '<img src="' + favicon(t.url) + '" alt="" width="28" height="28" loading="lazy">' +
+            '<span><span class="tool-cat">' + esc(LABEL[t.cat]) + '</span>' +
+            '<span class="tool-name">' + esc(t.name) + '</span>' +
+            '<span class="tool-desc">' + esc(t.desc) + '</span></span></a>';
+        }).join('')
+      : '<p class="empty">Aucun outil ne correspond à votre recherche.</p>';
+  }
+
+  search.addEventListener('input', function () {
+    query = search.value.trim().toLowerCase();
+    if (query && !isOpen()) setOpen(true);
+    renderGrid();
+  });
+
+  $('#focusSearch').addEventListener('click', function () {
+    setOpen(true);
+    search.focus();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = document.activeElement ? document.activeElement.tagName : '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+    e.preventDefault();
+    setOpen(true);
+    search.focus();
+  });
+
+  // Liens vers la liste d'outils : l'ouvrir, et remettre « Tous » si demandé
+  document.querySelectorAll('a[href="#outils"]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      if (a.dataset.jump === 'all') {
+        currentCat = 'all';
+        query = '';
+        search.value = '';
+        setActiveChip();
+        renderGrid();
+      }
+      setOpen(true);
+    });
+  });
+
+  /* ---------- Routage (pages séparées) ---------- */
+  const PAGE_IDS = ['apropos', 'legal', 'confidentialite', 'contact'];
+  const home = $('#home');
+  const pages = PAGE_IDS.map(function (id) { return document.getElementById(id); });
+
+  function route() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (PAGE_IDS.indexOf(id) !== -1) {
+      home.hidden = true;
+      pages.forEach(function (p) { p.hidden = p.id !== id; });
+      window.scrollTo(0, 0);
+      return;
+    }
+    home.hidden = false;
+    pages.forEach(function (p) { p.hidden = true; });
+    if (id === 'outils') setOpen(true);
+    const el = id ? document.getElementById(id) : null;
+    if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    else window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+
+  /* ---------- Mode Osint ---------- */
+  const osintBtn = $('#osintToggle');
+  const heroTitle = $('#heroTitle');
+  const toolbar = document.querySelector('.toolbar');
+  const toolsToggleWrap = document.querySelector('.tools-toggle-wrap');
+  const HERO_NORMAL = heroTitle.innerHTML;
+  const HERO_OSINT = 'Tous vos outils OSINT au même endroit.';
+
+  const grid = document.createElement('div');
+  grid.id = 'osintGrid';
+  grid.className = 'osint-grid';
+  grid.hidden = true;
+  grid.innerHTML = SEARCHERS.map(function (url) {
+    return '<a class="osint-card" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
+      '<img src="' + favicon(url) + '" alt="" width="28" height="28" loading="lazy">' +
+      '<span class="osint-name">' + esc(hostOf(url)) + '</span></a>';
+  }).join('');
+  toolsWrap.insertAdjacentElement('afterend', grid);
+
+  let osintOn = false;
+
+  function setOsint(on) {
+    osintOn = on;
+    osintBtn.classList.toggle('active', on);
+    osintBtn.setAttribute('aria-pressed', String(on));
+
+    // Thème sombre automatique, sans le mémoriser ; retour au thème de l'utilisateur à la sortie
+    if (on) {
+      prevTheme = html.getAttribute('data-theme') || 'light';
+      html.setAttribute('data-theme', 'dark');
+    } else {
+      html.setAttribute('data-theme', prevTheme);
+    }
+
+    heroTitle.innerHTML = on ? HERO_OSINT : HERO_NORMAL;
+
+    [toolbar, toolsToggleWrap, toolsWrap].forEach(function (el) {
+      if (el) el.style.display = on ? 'none' : '';
+    });
+    grid.hidden = !on;
+
+    if (on) document.getElementById('outils').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  osintBtn.addEventListener('click', function () { setOsint(!osintOn); });
+
+  /* ---------- Lumière souris ---------- */
+  const glow = $('#glow');
+  if (window.matchMedia('(pointer:fine)').matches && !reduce) {
+    let tx = 0, ty = 0, x = 0, y = 0, raf = null;
+    function loop() {
+      x += (tx - x) * 0.15;
+      y += (ty - y) * 0.15;
+      glow.style.transform = 'translate(' + (x - 260) + 'px,' + (y - 260) + 'px)';
+      raf = (Math.abs(tx - x) > 0.5 || Math.abs(ty - y) > 0.5) ? requestAnimationFrame(loop) : null;
+    }
+    window.addEventListener('mousemove', function (e) {
+      tx = e.clientX;
+      ty = e.clientY;
+      glow.classList.add('on');
+      if (!raf) raf = requestAnimationFrame(loop);
+    }, { passive: true });
+    html.addEventListener('mouseleave', function () { glow.classList.remove('on'); });
+  }
+
+  /* ---------- Apparition au scroll ---------- */
+  const reveals = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window && !reduce) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- Retour en haut ---------- */
+  const toTop = $('#toTop');
+  function onScroll() { toTop.classList.toggle('show', window.scrollY > 600); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  toTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+
+  /* ---------- Initialisation ---------- */
+  $('#year').textContent = new Date().getFullYear();
   renderChips();
   renderGrid();
-}
-
-/* ---------- Déplier / replier la liste ---------- */
-const wrap = $('#toolsWrap');
-const toggle = $('#toolsToggle');
-const toggleLabel = toggle.querySelector('span');
-
-function setOpen(open){
-  wrap.classList.toggle('open', open);
-  wrap.inert = !open;
-  toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  toggleLabel.textContent = open ? 'Masquer les outils' : 'Afficher tous les outils';
-}
-
-toggle.addEventListener('click', () => {
-  setOpen(!wrap.classList.contains('open'));
-});
-
-/* ---------- Pages d'information (routage par # ) ---------- */
-const PAGE_IDS = ['apropos', 'legal', 'confidentialite', 'contact'];
-const home = $('#home');
-const pages = PAGE_IDS.map(id => document.getElementById(id));
-
-function route(){
-  const h = decodeURIComponent(location.hash.slice(1));
-  const isPage = PAGE_IDS.indexOf(h) !== -1;
-
-  home.hidden = isPage;
-  pages.forEach(p => { p.hidden = p.id !== h; });
-
-  if (isPage) {
-    window.scrollTo(0, 0);
-    return;
-  }
-  if (h === 'outils') setOpen(true);
-  const target = h && document.getElementById(h);
-  if (target) target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-}
-
-window.addEventListener('hashchange', route);
-
-/* ---------- Événements ---------- */
-$('#chips').addEventListener('click', e => {
-  const btn = e.target.closest('.chip');
-  if (!btn) return;
-  currentCat = btn.dataset.cat;
-  render();
-  setOpen(true);
-});
-
-$('#search').addEventListener('input', () => {
-  renderGrid();
-  if ($('#search').value.trim()) setOpen(true);
-});
-
-// Effet de lumière qui suit la souris sur les cartes
-$('#grid').addEventListener('mousemove', e => {
-  const card = e.target.closest('.card');
-  if (!card) return;
-  const r = card.getBoundingClientRect();
-  card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-  card.style.setProperty('--my', (e.clientY - r.top) + 'px');
-});
-
-// Liens « Catégories » : affiche tout et ouvre la liste
-document.querySelectorAll('[data-jump="all"]').forEach(el => {
-  el.addEventListener('click', () => {
-    currentCat = 'all';
-    render();
-    setOpen(true);
-  });
-});
-
-// « Explorer » ouvre la liste
-document.querySelectorAll('a[href="#outils"]').forEach(a => {
-  a.addEventListener('click', () => setOpen(true));
-});
-
-function focusSearch(){
-  if (home.hidden) location.hash = 'outils';
-  setOpen(true);
-  document.getElementById('outils').scrollIntoView({ behavior:'smooth' });
-  setTimeout(() => $('#search').focus({ preventScroll:true }), 500);
-}
-$('#focusSearch').addEventListener('click', focusSearch);
-
-document.addEventListener('keydown', e => {
-  const s = $('#search');
-  const typing = /INPUT|TEXTAREA/.test(document.activeElement.tagName);
-  if (e.key === '/' && !typing) {
-    e.preventDefault();
-    focusSearch();
-  }
-  if (e.key === 'Escape' && document.activeElement === s) {
-    s.value = '';
-    renderGrid();
-    s.blur();
-  }
-});
-
-/* ---------- Thème clair / sombre ---------- */
-const THEME_KEY = 'untilted-theme';
-function setTheme(theme){
-  document.documentElement.dataset.theme = theme;
-  try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
-  $('#themeToggle').setAttribute('aria-label',
-    theme === 'dark' ? 'Passer en thème clair' : 'Passer en thème sombre');
-}
-let savedTheme = null;
-try { savedTheme = localStorage.getItem(THEME_KEY); } catch(e){}
-setTheme(savedTheme === 'dark' ? 'dark' : 'light');
-
-$('#themeToggle').addEventListener('click', () => {
-  setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
-});
-
-/* ---------- Animations ---------- */
-
-// Bandeau défilant : deux groupes identiques pour une boucle infinie
-const marqueeGroup = `<div class="group">${CATEGORIES.map(c => `<span>${esc(c.name)}</span>`).join('')}</div>`;
-$('#marquee').innerHTML = marqueeGroup + marqueeGroup.replace('class="group"', 'class="group" aria-hidden="true"');
-
-// Compteurs animés
-function countUp(el, target, duration = 1600){
-  const start = performance.now();
-  const step = now => {
-    const p = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - p, 4);
-    el.textContent = Math.round(target * eased);
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
-function runCounters(){
-  countUp(document.querySelector('[data-count="tools"]'), TOOLS.length);
-  countUp(document.querySelector('[data-count="cats"]'), CATEGORIES.length);
-}
-
-// Apparition au scroll
-const io = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    entry.target.classList.add('in');
-    if (entry.target.id === 'stats') runCounters();
-    io.unobserve(entry.target);
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-// Bouton retour en haut
-const toTop = $('#toTop');
-window.addEventListener('scroll', () => {
-  toTop.classList.toggle('show', window.scrollY > 600);
-}, { passive:true });
-toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
-
-// Lumière d'ambiance qui suit la souris (appareils avec souris uniquement)
-if (matchMedia('(pointer:fine)').matches) {
-  const glow = $('#glow');
-  let x = 0, y = 0, tx = 0, ty = 0;
-  window.addEventListener('mousemove', e => { tx = e.clientX; ty = e.clientY; });
-  (function loop(){
-    x += (tx - x) * 0.12;
-    y += (ty - y) * 0.12;
-    glow.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-    requestAnimationFrame(loop);
-  })();
-}
-
-$('#year').textContent = new Date().getFullYear();
-
-/* ---------- Initialisation ---------- */
-setOpen(false);
-render();
-route();
+  setOpen(false);
+  route();
+})();
 </script>
-
 </body>
 </html>
