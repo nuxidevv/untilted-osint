@@ -172,17 +172,6 @@ kbd {
   color: var(--muted);
 }
 
-/* Bouton Osint : pulsation discrète pour signaler qu'il est cliquable */
-.osint-btn { cursor: pointer; transition: transform .25s ease, box-shadow .25s ease; }
-.osint-btn.pulse { animation: osintPulse 2.6s ease-in-out infinite; }
-.osint-btn.pulse:hover,
-.osint-btn.pulse:focus-visible { animation-play-state: paused; }
-.osint-btn.active { box-shadow: inset 0 0 0 2px rgba(127,127,127,.6); font-weight: 700; }
-@keyframes osintPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-}
-
 /* Hero */
 .hero {
   min-height: 100vh;
@@ -196,6 +185,19 @@ kbd {
   letter-spacing: -.04em;
   font-weight: 800;
   margin: 0 0 22px;
+}
+/* Titre cliquable : légère pulsation pour signaler l'action */
+#heroTitle {
+  cursor: pointer;
+  transform-origin: left center;
+  animation: titlePulse 2.6s ease-in-out infinite;
+}
+#heroTitle:hover,
+#heroTitle:focus-visible { animation-play-state: paused; }
+#heroTitle:focus-visible { outline: 2px solid var(--glass-border); outline-offset: 6px; border-radius: 8px; }
+@keyframes titlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
 }
 .line { display: block; animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
 .line:nth-child(2) { animation-delay: .12s; }
@@ -348,40 +350,9 @@ kbd {
   letter-spacing: .06em;
   margin-bottom: 4px;
 }
-.tool-name { display: block; font-weight: 600; }
+.tool-name { display: block; font-weight: 600; word-break: break-all; }
 .tool-desc { display: block; color: var(--muted); font-size: .88rem; margin-top: 3px; }
 .empty { color: var(--muted); grid-column: 1 / -1; }
-
-/* Grille des searchers (mode Osint) */
-.osint-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
-  margin-top: 8px;
-}
-.osint-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
-  border-radius: 18px;
-  text-decoration: none;
-  color: inherit;
-  background: rgba(127,127,127,.08);
-  border: 1px solid rgba(127,127,127,.22);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: transform .2s ease, background-color .2s ease;
-}
-.osint-card:hover { transform: translateY(-2px); background: rgba(127,127,127,.14); }
-.osint-card img { border-radius: 8px; flex: none; }
-.osint-name {
-  display: block;
-  font-weight: 600;
-  font-family: var(--mono);
-  font-size: .95rem;
-  word-break: break-all;
-}
 
 /* Pages d'information */
 .info-page { min-height: 100vh; padding: 130px 0 90px; }
@@ -506,11 +477,10 @@ kbd {
 
     <section class="hero">
       <div class="container">
-        <h1 id="heroTitle"><span class="line">Tous vos outils OSINT</span> <span class="line">au même endroit.</span></h1>
+        <h1 id="heroTitle" tabindex="0" title="Cliquer pour afficher les searchers"><span class="line">Tous vos outils OSINT</span> <span class="line">au même endroit.</span></h1>
         <p class="lead">Une sélection d'outils de renseignement en sources ouvertes, classés par catégorie. Recherchez, filtrez et accédez directement à l'outil dont vous avez besoin.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#outils">Explorer les outils →</a>
-          <button type="button" class="btn osint-btn pulse" id="osintToggle" aria-pressed="false">Osint</button>
           <button type="button" class="btn" id="focusSearch">Rechercher <kbd>/</kbd></button>
         </div>
         <div class="stats" id="stats">
@@ -564,7 +534,7 @@ kbd {
       <a class="btn" href="#outils">← Retour aux outils</a>
       <h2>À propos</h2>
       <div class="info-card">
-        <p>Untilted rassemble des outils de recherche en sources ouvertes (OSINT) pour les journalistes, chercheurs, enquêteurs et curieux. Les outils sont classés par catégorie et accessibles en un clic. Le bouton « Osint » de la page d'accueil affiche une sélection de moteurs de recherche spécialisés et passe le site en thème sombre.</p>
+        <p>Untilted rassemble des outils de recherche en sources ouvertes (OSINT) pour les journalistes, chercheurs, enquêteurs et curieux. Les outils sont classés par catégorie et accessibles en un clic. En cliquant sur le titre de la page d'accueil, la liste affiche une sélection de moteurs de recherche spécialisés.</p>
       </div>
     </div></div>
   </section>
@@ -574,7 +544,7 @@ kbd {
       <a class="btn" href="#outils">← Retour aux outils</a>
       <h2>Avertissement légal</h2>
       <div class="info-card">
-        <p>Ce site recense des services publics à titre informatif et éducatif. Untilted ne gère pas les outils listés et n'est pas responsable de leur contenu ni de leur usage. Les moteurs de la sélection Osint sont des services tiers.</p>
+        <p>Ce site recense des services publics à titre informatif et éducatif. Untilted ne gère pas les outils listés et n'est pas responsable de leur contenu ni de leur usage. Les moteurs de la sélection Searcher sont des services tiers.</p>
         <h3>Usage</h3>
         <p>Toute recherche sur une personne doit respecter la loi, dont le RGPD, ainsi que les conditions d'utilisation des plateformes. Les outils de reconnaissance faciale ne sont pas référencés.</p>
       </div>
@@ -588,9 +558,9 @@ kbd {
       <div class="info-card">
         <p>Le site ne demande aucun compte et ne contient aucun formulaire.</p>
         <h3>Données stockées</h3>
-        <p>Le thème choisi (clair ou sombre) est enregistré localement dans votre navigateur. Le mode Osint n'est pas mémorisé.</p>
+        <p>Le thème choisi (clair ou sombre) est enregistré localement dans votre navigateur.</p>
         <h3>Services tiers</h3>
-        <p>Les icônes et les polices sont chargées depuis les serveurs de Google. Les icônes des sites de la sélection Osint sont aussi chargées depuis Google. Les sites ouverts par les liens ont leurs propres politiques de confidentialité.</p>
+        <p>Les icônes et les polices sont chargées depuis les serveurs de Google. Les icônes des sites de la sélection Searcher sont aussi chargées depuis Google. Les sites ouverts par les liens ont leurs propres politiques de confidentialité.</p>
       </div>
     </div></div>
   </section>
@@ -967,10 +937,7 @@ kbd {
 ["ressources","Kali Linux","https://www.kali.org/","Distribution Linux dédiée aux tests de sécurité."]
   ];
 
-  const TOOLS = RAW.map(function (r) { return { cat: r[0], name: r[1], url: r[2], desc: r[3] }; });
-  const LABEL = {};
-  CATEGORIES.forEach(function (c) { LABEL[c.id] = c.label; });
-
+  // Searchers : affichés uniquement en mode titre cliqué
   const SEARCHERS = [
     'https://vortex-searcher.vercel.app',
     'https://lynx-search.vercel.app',
@@ -981,6 +948,18 @@ kbd {
     'https://see-know.ru',
     'https://better-searcher.com'
   ];
+
+  const TOOLS = RAW.map(function (r) { return { cat: r[0], name: r[1], url: r[2], desc: r[3] }; });
+  const SEARCHER_TOOLS = SEARCHERS.map(function (url) {
+    return { cat: 'searcher', name: hostOf(url), url: url, desc: '' };
+  });
+  const SEARCHER_CATS = [{ id: 'searcher', label: 'Searcher' }];
+
+  const LABEL = { searcher: 'Searcher' };
+  CATEGORIES.forEach(function (c) { LABEL[c.id] = c.label; });
+
+  const HERO_NORMAL = '<span class="line">Tous vos outils OSINT</span> <span class="line">au même endroit.</span>';
+  const HERO_CSINT = '<span class="line">Tous vos outils CSINT</span> <span class="line">au même endroit.</span>';
 
   const $ = function (s) { return document.querySelector(s); };
   const html = document.documentElement;
@@ -995,12 +974,10 @@ kbd {
   function favicon(url) { return 'https://www.google.com/s2/favicons?domain=' + hostOf(url) + '&sz=64'; }
 
   /* ---------- Thème ---------- */
-  let prevTheme = html.getAttribute('data-theme') || 'light';
   const themeBtn = $('#themeToggle');
   themeBtn.addEventListener('click', function () {
     const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', next);
-    prevTheme = next;
     try { localStorage.setItem('untilted-theme', next); } catch (e) {}
   });
 
@@ -1022,11 +999,15 @@ kbd {
   $('#marqueeTrack').innerHTML = names + names;
 
   /* ---------- Outils ---------- */
+  let osintMode = false;
   let currentCat = 'all';
   let query = '';
   const search = $('#search');
   const toolsToggle = $('#toolsToggle');
   const toolsWrap = $('#toolsWrap');
+
+  function activeCats() { return osintMode ? SEARCHER_CATS : CATEGORIES; }
+  function activeTools() { return osintMode ? SEARCHER_TOOLS : TOOLS; }
 
   function isOpen() { return toolsWrap.classList.contains('open'); }
   function setOpen(open) {
@@ -1038,10 +1019,14 @@ kbd {
   toolsToggle.addEventListener('click', function () { setOpen(!isOpen()); });
 
   function renderChips() {
+    const tools = activeTools();
     const counts = {};
-    TOOLS.forEach(function (t) { counts[t.cat] = (counts[t.cat] || 0) + 1; });
-    let out = '<button type="button" class="chip" data-cat="all">Tous<span class="n">' + TOOLS.length + '</span></button>';
-    CATEGORIES.forEach(function (c) {
+    tools.forEach(function (t) { counts[t.cat] = (counts[t.cat] || 0) + 1; });
+    let out = '';
+    if (!osintMode) {
+      out += '<button type="button" class="chip" data-cat="all">Tous<span class="n">' + tools.length + '</span></button>';
+    }
+    activeCats().forEach(function (c) {
       out += '<button type="button" class="chip" data-cat="' + c.id + '">' + esc(c.label) +
         '<span class="n">' + (counts[c.id] || 0) + '</span></button>';
     });
@@ -1063,7 +1048,7 @@ kbd {
   });
 
   function filtered() {
-    return TOOLS.filter(function (t) {
+    return activeTools().filter(function (t) {
       if (currentCat !== 'all' && t.cat !== currentCat) return false;
       if (!query) return true;
       return (t.name + ' ' + t.desc + ' ' + LABEL[t.cat] + ' ' + t.url).toLowerCase().indexOf(query) !== -1;
@@ -1079,7 +1064,8 @@ kbd {
             '<img src="' + favicon(t.url) + '" alt="" width="28" height="28" loading="lazy">' +
             '<span><span class="tool-cat">' + esc(LABEL[t.cat]) + '</span>' +
             '<span class="tool-name">' + esc(t.name) + '</span>' +
-            '<span class="tool-desc">' + esc(t.desc) + '</span></span></a>';
+            (t.desc ? '<span class="tool-desc">' + esc(t.desc) + '</span>' : '') +
+            '</span></a>';
         }).join('')
       : '<p class="empty">Aucun outil ne correspond à votre recherche.</p>';
   }
@@ -1108,7 +1094,7 @@ kbd {
   document.querySelectorAll('a[href="#outils"]').forEach(function (a) {
     a.addEventListener('click', function () {
       if (a.dataset.jump === 'all') {
-        currentCat = 'all';
+        currentCat = osintMode ? 'searcher' : 'all';
         query = '';
         search.value = '';
         setActiveChip();
@@ -1140,51 +1126,29 @@ kbd {
   }
   window.addEventListener('hashchange', route);
 
-  /* ---------- Mode Osint ---------- */
-  const osintBtn = $('#osintToggle');
+  /* ---------- Titre cliquable : bascule CSINT / Searcher ---------- */
   const heroTitle = $('#heroTitle');
-  const toolbar = document.querySelector('.toolbar');
-  const toolsToggleWrap = document.querySelector('.tools-toggle-wrap');
-  const HERO_NORMAL = heroTitle.innerHTML;
-  const HERO_OSINT = 'Tous vos outils OSINT au même endroit.';
-
-  const grid = document.createElement('div');
-  grid.id = 'osintGrid';
-  grid.className = 'osint-grid';
-  grid.hidden = true;
-  grid.innerHTML = SEARCHERS.map(function (url) {
-    return '<a class="osint-card" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
-      '<img src="' + favicon(url) + '" alt="" width="28" height="28" loading="lazy">' +
-      '<span class="osint-name">' + esc(hostOf(url)) + '</span></a>';
-  }).join('');
-  toolsWrap.insertAdjacentElement('afterend', grid);
-
-  let osintOn = false;
 
   function setOsint(on) {
-    osintOn = on;
-    osintBtn.classList.toggle('active', on);
-    osintBtn.setAttribute('aria-pressed', String(on));
-
-    // Thème sombre automatique, sans le mémoriser ; retour au thème de l'utilisateur à la sortie
-    if (on) {
-      prevTheme = html.getAttribute('data-theme') || 'light';
-      html.setAttribute('data-theme', 'dark');
-    } else {
-      html.setAttribute('data-theme', prevTheme);
-    }
-
-    heroTitle.innerHTML = on ? HERO_OSINT : HERO_NORMAL;
-
-    [toolbar, toolsToggleWrap, toolsWrap].forEach(function (el) {
-      if (el) el.style.display = on ? 'none' : '';
-    });
-    grid.hidden = !on;
-
-    if (on) document.getElementById('outils').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    osintMode = on;
+    heroTitle.innerHTML = on ? HERO_CSINT : HERO_NORMAL;
+    currentCat = on ? 'searcher' : 'all';
+    query = '';
+    search.value = '';
+    renderChips();
+    renderGrid();
+    setOpen(true);
+    const outils = document.getElementById('outils');
+    if (outils) outils.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
   }
 
-  osintBtn.addEventListener('click', function () { setOsint(!osintOn); });
+  heroTitle.addEventListener('click', function () { setOsint(!osintMode); });
+  heroTitle.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setOsint(!osintMode);
+    }
+  });
 
   /* ---------- Lumière souris ---------- */
   const glow = $('#glow');
